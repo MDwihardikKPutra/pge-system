@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\WorkPlan;
 use App\Models\WorkRealization;
 use App\Models\Project;
-use App\Models\Spd;
+use App\Models\SPD;
 use App\Models\Purchase;
 use App\Models\VendorPayment;
 use App\Models\LeaveRequest;
@@ -131,7 +131,7 @@ class DashboardController extends Controller
                 case 'payment-approval':
                     // Get pending approvals count (only for user's own if not admin)
                     if ($this->isAdmin()) {
-                        $data['count'] = \App\Models\Spd::where('status', 'pending')->count() +
+                        $data['count'] = \App\Models\SPD::where('status', 'pending')->count() +
                                        \App\Models\Purchase::where('status', 'pending')->count() +
                                        \App\Models\VendorPayment::where('status', 'pending')->count();
                     } else {

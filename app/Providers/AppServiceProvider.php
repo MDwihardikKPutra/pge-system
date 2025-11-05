@@ -10,7 +10,7 @@ use App\View\Composers\WorkNotificationComposer;
 use App\Models\Project;
 use App\Models\WorkPlan;
 use App\Models\WorkRealization;
-use App\Models\Spd;
+use App\Models\SPD;
 use App\Models\Purchase;
 use App\Models\VendorPayment;
 use App\Models\LeaveRequest;
@@ -69,7 +69,7 @@ class AppServiceProvider extends ServiceProvider
         // Register activity observers for dashboard cache invalidation
         WorkPlan::observe(ActivityObserver::class);
         WorkRealization::observe(ActivityObserver::class);
-        Spd::observe(ActivityObserver::class);
+        SPD::observe(ActivityObserver::class);
         Purchase::observe(ActivityObserver::class);
         VendorPayment::observe(ActivityObserver::class);
         LeaveRequest::observe(ActivityObserver::class);

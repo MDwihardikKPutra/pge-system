@@ -8,7 +8,7 @@ use App\Models\WorkPlan;
 use App\Models\WorkRealization;
 use App\Models\LeaveRequest;
 use App\Models\Project;
-use App\Models\Spd;
+use App\Models\SPD;
 use App\Models\Purchase;
 use App\Models\VendorPayment;
 use App\Enums\ApprovalStatus;

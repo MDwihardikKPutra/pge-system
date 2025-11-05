@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Changelog;
 use App\Models\User;
-use App\Models\Spd;
+use App\Models\SPD;
 use App\Models\Purchase;
 use App\Models\VendorPayment;
 use App\Models\LeaveRequest;
