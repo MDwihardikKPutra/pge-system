@@ -79,7 +79,7 @@
                                     @endif
                                     @if($project->description)
                                         <div class="text-xs text-slate-500 mt-1">
-                                            {{ strlen($project->description) > 100 ? substr($project->description, 0, 100) . '...' : $project->description }}
+                                            {{ \Illuminate\Support\Str::limit($project->description, 100) }}
                                         </div>
                                     @endif
                                 </div>
