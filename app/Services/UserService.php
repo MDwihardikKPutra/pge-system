@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\Module;
+use App\Helpers\CacheHelper;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -85,6 +86,10 @@ class UserService
             $this->syncUserModules($user, $modules);
         }
 
+        // Clear cache yang terkait dengan user
+        CacheHelper::clearProjectManagementUsers();
+        CacheHelper::clearDashboardUsersList();
+
         return $user;
     }
 
@@ -128,6 +133,10 @@ class UserService
                 $this->syncUserModules($user, $defaultModules);
             }
         }
+
+        // Clear cache yang terkait dengan user
+        CacheHelper::clearProjectManagementUsers();
+        CacheHelper::clearDashboardUsersList();
 
         return $user->fresh();
     }
@@ -207,7 +216,13 @@ class UserService
             throw new \Exception('Anda tidak dapat menghapus akun sendiri.');
         }
 
-        return $user->delete();
+        $result = $user->delete();
+
+        // Clear cache yang terkait dengan user
+        CacheHelper::clearProjectManagementUsers();
+        CacheHelper::clearDashboardUsersList();
+
+        return $result;
     }
 
     /**

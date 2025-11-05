@@ -202,5 +202,13 @@ class CacheHelper
                 ->get();
         });
     }
+
+    /**
+     * Clear project management users cache
+     */
+    public static function clearProjectManagementUsers()
+    {
+        Cache::forget('project_management_all_users');
+    }
 }
 
