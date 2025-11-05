@@ -233,7 +233,7 @@ class DashboardController extends Controller
         }
         
             // SPD
-            $spds = Spd::with(['user', 'project', 'approvedBy'])
+            $spds = SPD::with(['user', 'project', 'approvedBy'])
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
@@ -365,7 +365,7 @@ class DashboardController extends Controller
         }
         
         // Sort by date (most recent first) and take top 20
-            return $activities->sortByDesc(function ($activity) {
+        return $activities->sortByDesc(function ($activity) {
             return $activity['date'] instanceof \Carbon\Carbon ? $activity['date']->timestamp : strtotime($activity['date']);
         })->take(20)->values();
         });
