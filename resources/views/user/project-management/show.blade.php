@@ -6,20 +6,16 @@
 
 @section('content')
 @php
+    use App\Constants\ProjectAccessType;
     $managersData = $project->managers->map(fn($m) => [
         'id' => $m->id, 
         'name' => $m->name,
-        'access_type' => $m->pivot->access_type ?? 'pm'
+        'access_type' => $m->pivot->access_type ?? ProjectAccessType::PM
     ])->toArray();
     $availableUsersData = $isAdmin ? $allUsers->map(fn($u) => ['id' => $u->id, 'name' => $u->name, 'email' => $u->email])->toArray() : [];
-    $accessTypeLabels = [
-        'pm' => 'Project Manager (Work Plans & Realizations)',
-        'finance' => 'Finance (Payments Only)',
-        'full' => 'Full Access (All)'
-    ];
 @endphp
 <div class="py-8" 
-     x-data="projectManagement({{ $project->id }}, {{ $isAdmin ? 'true' : 'false' }}, @js($managersData), @js($availableUsersData), '{{ $accessType ?? 'full' }}')">
+     x-data="projectManagement({{ $project->id }}, {{ $isAdmin ? 'true' : 'false' }}, @js($managersData), @js($availableUsersData), '{{ $accessType ?? ProjectAccessType::FULL }}')">
     <!-- Preview Modals Container -->
     <div x-data="workPlanPreview()" 
          @open-work-plan-preview.window="previewData = $event.detail; showPreviewModal = true"
@@ -79,18 +75,18 @@
                 <div class="flex flex-wrap gap-2">
                     @foreach($project->managers as $manager)
                     @php
-                        $accessType = $manager->pivot->access_type ?? 'pm';
+                        $accessType = $manager->pivot->access_type ?? ProjectAccessType::PM;
                         $badgeColors = [
-                            'pm' => 'bg-blue-50 text-blue-700',
-                            'finance' => 'bg-green-50 text-green-700',
-                            'full' => 'bg-purple-50 text-purple-700'
+                            ProjectAccessType::PM => 'bg-blue-50 text-blue-700',
+                            ProjectAccessType::FINANCE => 'bg-green-50 text-green-700',
+                            ProjectAccessType::FULL => 'bg-purple-50 text-purple-700'
                         ];
                         $badgeColor = $badgeColors[$accessType] ?? 'bg-blue-50 text-blue-700';
                         $accessTypeLabel = $accessTypeLabels[$accessType] ?? 'Project Manager';
                     @endphp
                     <span class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium {{ $badgeColor }}">
                         {{ $manager->name }}
-                        <span class="text-xs opacity-75">({{ ucfirst($accessType) }})</span>
+                        <span class="text-xs opacity-75">({{ $accessTypeLabel }})</span>
                     </span>
                     @endforeach
                 </div>
@@ -445,12 +441,12 @@
                                     <div class="flex flex-wrap gap-2">
                                         @foreach($project->managers as $manager)
                                         @php
-                                            $accessType = $manager->pivot->access_type ?? 'pm';
+                                            $accessType = $manager->pivot->access_type ?? ProjectAccessType::PM;
                                             $accessTypeLabel = $accessTypeLabels[$accessType] ?? 'Project Manager';
                                             $badgeColors = [
-                                                'pm' => 'bg-blue-50 text-blue-700',
-                                                'finance' => 'bg-green-50 text-green-700',
-                                                'full' => 'bg-purple-50 text-purple-700'
+                                                ProjectAccessType::PM => 'bg-blue-50 text-blue-700',
+                                                ProjectAccessType::FINANCE => 'bg-green-50 text-green-700',
+                                                ProjectAccessType::FULL => 'bg-purple-50 text-purple-700'
                                             ];
                                             $badgeColor = $badgeColors[$accessType] ?? 'bg-blue-50 text-blue-700';
                                         @endphp
@@ -485,9 +481,9 @@
                                 </div>
                                 <div class="flex gap-2">
                                     <select x-model="selectedAccessType" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                                        <option value="pm">Project Manager (Work Plans & Realizations)</option>
-                                        <option value="finance">Finance (Payments Only)</option>
-                                        <option value="full">Full Access (All)</option>
+                                        @foreach($accessTypes as $type)
+                                            <option value="{{ $type }}">{{ $accessTypeLabels[$type] }}</option>
+                                        @endforeach
                                     </select>
                                     <button @click="assignManager()" class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors" style="background-color: #0a1628;" onmouseover="this.style.backgroundColor='#1e293b'" onmouseout="this.style.backgroundColor='#0a1628'">
                                         Tambah
@@ -717,10 +713,10 @@ document.addEventListener('alpine:init', () => {
         },
         
         init() {
-            if (this.isAdmin && this.availableUsers.length === 0) {
-                // Load available users when modal is opened
+            if (this.isAdmin) {
+                // Always load available users when modal is opened to get fresh data
                 this.$watch('showManagerModal', value => {
-                    if (value && this.availableUsers.length === 0) {
+                    if (value) {
                         this.loadAvailableUsers();
                     }
                 });

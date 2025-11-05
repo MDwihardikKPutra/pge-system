@@ -89,19 +89,20 @@
                                     <div class="flex flex-wrap gap-1.5">
                                         @foreach($project->managers as $manager)
                                             @php
-                                                $accessType = $manager->pivot->access_type ?? 'pm';
+                                                use App\Constants\ProjectAccessType;
+                                                $accessType = $manager->pivot->access_type ?? ProjectAccessType::PM;
                                                 $badgeColors = [
-                                                    'pm' => 'bg-blue-100 text-blue-700',
-                                                    'finance' => 'bg-green-100 text-green-700',
-                                                    'full' => 'bg-purple-100 text-purple-700'
+                                                    ProjectAccessType::PM => 'bg-blue-100 text-blue-700',
+                                                    ProjectAccessType::FINANCE => 'bg-green-100 text-green-700',
+                                                    ProjectAccessType::FULL => 'bg-purple-100 text-purple-700'
                                                 ];
                                                 $badgeColor = $badgeColors[$accessType] ?? 'bg-blue-100 text-blue-700';
-                                                $accessTypeLabels = [
-                                                    'pm' => 'PM',
-                                                    'finance' => 'Finance',
-                                                    'full' => 'Full'
+                                                $accessTypeShortLabels = [
+                                                    ProjectAccessType::PM => 'PM',
+                                                    ProjectAccessType::FINANCE => 'Finance',
+                                                    ProjectAccessType::FULL => 'Full'
                                                 ];
-                                                $accessTypeLabel = $accessTypeLabels[$accessType] ?? 'PM';
+                                                $accessTypeLabel = $accessTypeShortLabels[$accessType] ?? 'PM';
                                             @endphp
                                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium {{ $badgeColor }}" title="{{ $manager->name }} - {{ $accessTypeLabel }}">
                                                 <span class="font-semibold">{{ $manager->name }}</span>

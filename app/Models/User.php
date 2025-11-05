@@ -128,7 +128,7 @@ class User extends Authenticatable
     public function managedProjectsWithWorkAccess()
     {
         return $this->belongsToMany(Project::class, 'project_managers')
-            ->wherePivotIn('access_type', ['pm', 'full'])
+            ->wherePivotIn('access_type', \App\Constants\ProjectAccessType::workAccessTypes())
             ->withPivot('access_type')
             ->withTimestamps();
     }
@@ -139,7 +139,7 @@ class User extends Authenticatable
     public function managedProjectsWithPaymentAccess()
     {
         return $this->belongsToMany(Project::class, 'project_managers')
-            ->wherePivotIn('access_type', ['finance', 'full'])
+            ->wherePivotIn('access_type', \App\Constants\ProjectAccessType::paymentAccessTypes())
             ->withPivot('access_type')
             ->withTimestamps();
     }

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\SPD;
+use App\Constants\ProjectAccessType;
 
 class Project extends Model
 {
@@ -92,8 +93,8 @@ class Project extends Model
             return null;
         }
         
-        // Fallback to 'pm' if access_type is null (for old data before migration)
-        return $manager->pivot->access_type ?? 'pm';
+        // Fallback to PM if access_type is null (for old data before migration)
+        return $manager->pivot->access_type ?? ProjectAccessType::PM;
     }
 
     /**
@@ -102,7 +103,7 @@ class Project extends Model
     public function canAccessWork($userId): bool
     {
         $accessType = $this->getManagerAccessType($userId);
-        return in_array($accessType, ['pm', 'full']);
+        return $accessType && ProjectAccessType::canAccessWork($accessType);
     }
 
     /**
@@ -111,7 +112,7 @@ class Project extends Model
     public function canAccessPayments($userId): bool
     {
         $accessType = $this->getManagerAccessType($userId);
-        return in_array($accessType, ['finance', 'full']);
+        return $accessType && ProjectAccessType::canAccessPayments($accessType);
     }
 
     /**

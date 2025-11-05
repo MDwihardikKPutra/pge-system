@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Models\User;
+use App\Constants\ProjectAccessType;
 use Illuminate\Http\Request;
 
 class ProjectManagerController extends Controller
@@ -16,7 +17,7 @@ class ProjectManagerController extends Controller
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'access_type' => 'required|in:pm,finance,full'
+            'access_type' => ['required', 'in:' . implode(',', ProjectAccessType::all())]
         ]);
 
         $user = User::findOrFail($request->user_id);
@@ -34,15 +35,9 @@ class ProjectManagerController extends Controller
             'access_type' => $request->access_type
         ]);
 
-        $accessTypeLabels = [
-            'pm' => 'Project Manager (Work Plans & Realizations)',
-            'finance' => 'Finance (Payments Only)',
-            'full' => 'Full Access (All)'
-        ];
-
         return response()->json([
             'success' => true,
-            'message' => 'Project Manager berhasil ditambahkan dengan akses: ' . $accessTypeLabels[$request->access_type],
+            'message' => 'Project Manager berhasil ditambahkan dengan akses: ' . ProjectAccessType::label($request->access_type),
             'manager' => $user->load('managedProjects')
         ]);
     }
@@ -54,7 +49,7 @@ class ProjectManagerController extends Controller
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'access_type' => 'required|in:pm,finance,full'
+            'access_type' => ['required', 'in:' . implode(',', ProjectAccessType::all())]
         ]);
 
         $user = User::findOrFail($request->user_id);
@@ -72,15 +67,9 @@ class ProjectManagerController extends Controller
             'access_type' => $request->access_type
         ]);
 
-        $accessTypeLabels = [
-            'pm' => 'Project Manager (Work Plans & Realizations)',
-            'finance' => 'Finance (Payments Only)',
-            'full' => 'Full Access (All)'
-        ];
-
         return response()->json([
             'success' => true,
-            'message' => 'Access type berhasil diupdate menjadi: ' . $accessTypeLabels[$request->access_type]
+            'message' => 'Access type berhasil diupdate menjadi: ' . ProjectAccessType::label($request->access_type)
         ]);
     }
 
@@ -126,11 +115,6 @@ class ProjectManagerController extends Controller
             ->get()
             ->map(function($user) use ($project) {
                 $accessType = $project->getManagerAccessType($user->id);
-                $accessTypeLabels = [
-                    'pm' => 'Project Manager (Work Plans & Realizations)',
-                    'finance' => 'Finance (Payments Only)',
-                    'full' => 'Full Access (All)'
-                ];
                 
                 return [
                     'id' => $user->id,
@@ -138,7 +122,7 @@ class ProjectManagerController extends Controller
                     'email' => $user->email,
                     'is_manager' => $project->hasManager($user->id),
                     'access_type' => $accessType,
-                    'access_type_label' => $accessType ? ($accessTypeLabels[$accessType] ?? 'Unknown') : null
+                    'access_type_label' => $accessType ? ProjectAccessType::label($accessType) : null
                 ];
             });
 

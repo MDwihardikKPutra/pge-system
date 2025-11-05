@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Traits\ChecksAuthorization;
+use App\Constants\ProjectAccessType;
 use Illuminate\Http\Request;
 
 class ProjectManagementController extends Controller
@@ -46,7 +47,7 @@ class ProjectManagementController extends Controller
         $isAdmin = $this->isAdmin();
 
         // Get user's access type for this project
-        $accessType = $isAdmin ? 'full' : $project->getManagerAccessType($user->id);
+        $accessType = $isAdmin ? ProjectAccessType::FULL : $project->getManagerAccessType($user->id);
         
         // Check if user has access to this project
         if (!$isAdmin && !$accessType) {
@@ -80,6 +81,8 @@ class ProjectManagementController extends Controller
             'isAdmin' => $isAdmin,
             'allUsers' => $allUsers,
             'accessType' => $accessType,
+            'accessTypes' => ProjectAccessType::all(),
+            'accessTypeLabels' => ProjectAccessType::labels(),
         ]));
     }
 
@@ -109,9 +112,10 @@ class ProjectManagementController extends Controller
         ];
 
         // Determine which data to load based on access type
-        $canAccessWork = $isAdmin || $accessType === 'pm' || $accessType === 'full';
-        $canAccessPayments = $isAdmin || $accessType === 'finance' || $accessType === 'full';
-        $onlyOwnData = !$isAdmin && !in_array($accessType, ['pm', 'finance', 'full']);
+        $canAccessWork = $isAdmin || ($accessType && ProjectAccessType::canAccessWork($accessType));
+        $canAccessPayments = $isAdmin || ($accessType && ProjectAccessType::canAccessPayments($accessType));
+        $allAccessTypes = ProjectAccessType::all();
+        $onlyOwnData = !$isAdmin && !in_array($accessType, $allAccessTypes);
 
         // Load work plans
         if ($canAccessWork) {
