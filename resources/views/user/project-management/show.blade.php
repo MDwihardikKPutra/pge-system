@@ -141,7 +141,11 @@
                                     <td class="px-4 py-3 text-slate-600">{{ $plan->plan_date ? $plan->plan_date->format('d M Y') : '-' }}</td>
                                     <td class="px-4 py-3 text-slate-600">{{ $plan->user->name ?? '-' }}</td>
                                     <td class="px-4 py-3">
-                                        <div class="text-xs text-slate-900">{{ \Illuminate\Support\Str::limit($plan->description ?? $plan->title ?? '-', 60) }}</div>
+                                        @php
+                                            $planText = $plan->description ?? $plan->title ?? '-';
+                                            $planTextLimited = strlen($planText) > 60 ? substr($planText, 0, 60) . '...' : $planText;
+                                        @endphp
+                                        <div class="text-xs text-slate-900">{{ $planTextLimited }}</div>
                                     </td>
                                     <td class="px-4 py-3">
                                         @if($plan->work_location)
@@ -210,7 +214,11 @@
                                     <td class="px-4 py-3 text-slate-600">{{ $realization->realization_date ? $realization->realization_date->format('d M Y') : '-' }}</td>
                                     <td class="px-4 py-3 text-slate-600">{{ $realization->user->name ?? '-' }}</td>
                                     <td class="px-4 py-3">
-                                        <div class="text-xs text-slate-900">{{ \Illuminate\Support\Str::limit($realization->description ?? '-', 60) }}</div>
+                                        @php
+                                            $realizationText = $realization->description ?? '-';
+                                            $realizationTextLimited = strlen($realizationText) > 60 ? substr($realizationText, 0, 60) . '...' : $realizationText;
+                                        @endphp
+                                        <div class="text-xs text-slate-900">{{ $realizationTextLimited }}</div>
                                     </td>
                                     <td class="px-4 py-3">
                                         @if($realization->work_location)
