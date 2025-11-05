@@ -12,7 +12,8 @@
         'name' => $m->name,
         'access_type' => $m->pivot->access_type ?? ProjectAccessType::PM
     ])->toArray();
-    $availableUsersData = $isAdmin ? $allUsers->map(fn($u) => ['id' => $u->id, 'name' => $u->name, 'email' => $u->email])->toArray() : [];
+    // Don't pre-populate availableUsersData - always load fresh via AJAX to avoid cache issues
+    $availableUsersData = [];
 @endphp
 <div class="py-8" 
      x-data="projectManagement({{ $project->id }}, {{ $isAdmin ? 'true' : 'false' }}, @js($managersData), @js($availableUsersData), '{{ $accessType ?? ProjectAccessType::FULL }}')">
@@ -636,15 +637,25 @@ document.addEventListener('alpine:init', () => {
                 // Add cache busting parameter to ensure fresh data
                 const timestamp = new Date().getTime();
                 const response = await fetch(`/admin/project-managers/projects/${this.projectId}/available-users?t=${timestamp}`, {
+                    method: 'GET',
                     cache: 'no-store',
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
                     }
                 });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch users');
+                }
+                
                 const data = await response.json();
-                this.availableUsers = data;
+                // Always replace with fresh data
+                this.availableUsers = Array.isArray(data) ? data : [];
             } catch (error) {
                 console.error('Error loading users:', error);
+                this.availableUsers = [];
             }
         },
         
@@ -722,8 +733,12 @@ document.addEventListener('alpine:init', () => {
         init() {
             if (this.isAdmin) {
                 // Always load available users when modal is opened to get fresh data
+                // Clear initial data first to ensure fresh data is loaded
+                this.availableUsers = [];
                 this.$watch('showManagerModal', value => {
                     if (value) {
+                        // Always refresh data when modal opens, ignore initial cached data
+                        this.availableUsers = [];
                         this.loadAvailableUsers();
                     }
                 });
