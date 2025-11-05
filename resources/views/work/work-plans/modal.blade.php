@@ -1,0 +1,229 @@
+<!-- Modal Background Overlay -->
+<div x-show="showModal" 
+    x-cloak
+    x-transition:enter="transition ease-out duration-300"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-200"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+    class="fixed inset-0 bg-gray-500 bg-opacity-75 z-40"
+    @click="closeModal()"
+    style="display: none;"></div>
+
+<!-- Modal Dialog -->
+<div x-show="showModal" 
+    x-cloak
+    @keydown.escape.window="closeModal()"
+    x-transition:enter="transition ease-out duration-300"
+    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+    x-transition:leave="transition ease-in duration-200"
+    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+    class="fixed inset-0 z-50 overflow-y-auto"
+    style="display: none;">
+    
+    <div class="flex min-h-screen items-center justify-center p-4">
+        <div @click.away="closeModal()" class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="px-6 py-5 sticky top-0 z-10 rounded-t-lg" style="background-color: #0a1628;">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-10 h-10 bg-white bg-opacity-10 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">
+                                <span x-show="modalMode === 'create'">Rencana Kerja Baru</span>
+                                <span x-show="modalMode === 'edit'">Edit Rencana Kerja</span>
+                                <span x-show="modalMode === 'view'">Detail Rencana Kerja</span>
+                            </h3>
+                            <p class="text-sm text-gray-300 mt-0.5" x-show="modalMode === 'create'">Buat rencana kerja harian Anda</p>
+                            <p class="text-sm text-gray-300 mt-0.5" x-show="modalMode === 'edit'">Update rencana kerja Anda</p>
+                            <p class="text-sm text-gray-300 mt-0.5" x-show="modalMode === 'view'">Informasi detail rencana kerja</p>
+                        </div>
+                    </div>
+                    <button @click="closeModal()" class="text-gray-300 hover:text-white hover:bg-white hover:bg-opacity-10 rounded-lg p-1 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- View Mode -->
+            <div x-show="modalMode === 'view' && currentPlan" class="px-6 py-4">
+                <div class="space-y-4">
+                    <div class="bg-gray-50 rounded-lg p-4 space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Nomor Rencana</label>
+                            <p class="text-sm font-semibold text-gray-900" x-text="currentPlan?.work_plan_number"></p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Tanggal</label>
+                                <p class="text-sm font-semibold text-gray-900" x-text="currentPlan?.plan_date"></p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Lokasi Kerja</label>
+                                <p class="text-sm font-semibold text-gray-900" x-text="currentPlan?.work_location"></p>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Durasi</label>
+                            <p class="text-sm font-semibold text-blue-600" x-text="(currentPlan?.planned_duration_hours || 0) + ' jam'"></p>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-2">Deskripsi</label>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-900 whitespace-pre-wrap" x-text="currentPlan?.description"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-3 border-t pt-4">
+                    <button type="button" @click="closeModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">Tutup</button>
+                    <button x-show="currentPlan?.id && currentPlan?.status !== 'approved'" @click="modalMode = 'edit'; openWorkPlanModal('edit', currentPlan)" class="px-4 py-2 text-white rounded-lg text-sm font-medium transition-colors" style="background-color: #0a1628;" onmouseover="this.style.backgroundColor='#1e293b'" onmouseout="this.style.backgroundColor='#0a1628'">Edit</button>
+                </div>
+            </div>
+
+            <!-- Create/Edit Mode -->
+            <form x-show="modalMode === 'create' || modalMode === 'edit'" 
+                  :action="modalMode === 'create' ? '{{ route('user.work-plans.store') }}' : '/user/work-plans/' + currentPlan?.id" 
+                  method="POST" 
+                  class="px-6 py-4">
+                <template x-if="modalMode === 'edit'">
+                    <input type="hidden" name="_method" value="PUT">
+                </template>
+                @csrf
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Project (Opsional)</label>
+                        <div x-data="projectSearchableSelect(
+                            (currentPlan?.project?.name ? (currentPlan.project.name + ' (' + currentPlan.project.code + ')') : (currentPlan?.project_name ? (currentPlan.project_name + ' (' + currentPlan.project_code + ')') : null)),
+                            currentPlan?.project_id || null
+                        )" class="relative">
+                            <input type="hidden" name="project_id" :value="selectedId">
+                            
+                            <div class="relative">
+                                <input 
+                                    type="text"
+                                    x-model="searchQuery"
+                                    @input="searchProjects()"
+                                    @focus="showDropdown = true"
+                                    @blur="setTimeout(() => showDropdown = false, 200)"
+                                    placeholder="Cari atau pilih project..."
+                                    class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 pr-10"
+                                    autocomplete="off"
+                                >
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Dropdown Results -->
+                            <div x-show="showDropdown && (searching || projects.length > 0)" 
+                                 x-cloak
+                                 x-transition
+                                 class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+                                <div x-show="searching" class="p-3 text-center text-sm text-gray-500">
+                                    Mencari...
+                                </div>
+                                <template x-if="!searching && projects.length === 0 && searchQuery.length > 0">
+                                    <div class="p-3 text-center text-sm text-gray-500">
+                                        Tidak ada project ditemukan
+                                    </div>
+                                </template>
+                                <template x-if="!searching && projects.length > 0">
+                                    <ul class="py-1">
+                                        <template x-for="project in projects" :key="project.id">
+                                            <li>
+                                                <button 
+                                                    type="button"
+                                                    @click="selectProject(project)"
+                                                    class="w-full text-left px-4 py-2 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors"
+                                                    :class="{ 'bg-blue-50': selectedId == project.id }"
+                                                >
+                                                    <div class="font-medium text-gray-900" x-text="project.name"></div>
+                                                    <div class="text-xs text-gray-500" x-text="project.code"></div>
+                                                </button>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </template>
+                            </div>
+
+                            <!-- Clear Button -->
+                            <button 
+                                type="button"
+                                x-show="selectedId"
+                                @click="clearSelection()"
+                                class="absolute right-8 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            >
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        @error('project_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Rencana <span class="text-red-500">*</span></label>
+                            <input type="date" name="plan_date" 
+                                   :value="currentPlan?.plan_date || ''" 
+                                   :min="new Date().toISOString().split('T')[0]"
+                                   required 
+                                   class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                                   @change="validatePlanTime($event)"
+                                   x-ref="planDateInput">
+                            <p class="mt-1 text-xs text-amber-600" x-show="planTimeWarning" x-text="planTimeWarning"></p>
+                            @error('plan_date')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi Kerja <span class="text-red-500">*</span></label>
+                            <select name="work_location" required class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Pilih Lokasi</option>
+                                <option value="office" :selected="currentPlan?.work_location === 'office'">Office (Kantor)</option>
+                                <option value="site" :selected="currentPlan?.work_location === 'site'">Site (Lapangan)</option>
+                                <option value="wfh" :selected="currentPlan?.work_location === 'wfh'">WFH (Work From Home)</option>
+                                <option value="wfa" :selected="currentPlan?.work_location === 'wfa'">WFA (Work From Anywhere)</option>
+                            </select>
+                            @error('work_location')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Durasi Kerja (Jam) <span class="text-red-500">*</span></label>
+                        <input type="number" name="planned_duration_hours" 
+                               :value="currentPlan?.planned_duration_hours || 8" 
+                               required min="0.5" max="24" step="0.5"
+                               class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Estimasi waktu yang akan dihabiskan (0.5 - 24 jam)</p>
+                        @error('planned_duration_hours')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Rencana <span class="text-red-500">*</span></label>
+                        <textarea name="description" required rows="4" 
+                                  class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" 
+                                  placeholder="Jelaskan secara detail rencana kerja Anda..."
+                                  x-bind:value="currentPlan?.description || ''"></textarea>
+                        @error('description')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-3 border-t pt-4">
+                    <button type="button" @click="closeModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-white rounded-lg transition-colors" style="background-color: #0a1628;" onmouseover="this.style.backgroundColor='#1e293b'" onmouseout="this.style.backgroundColor='#0a1628'">
+                        <span x-show="modalMode === 'create'">Simpan Rencana Kerja</span>
+                        <span x-show="modalMode === 'edit'">Update Rencana Kerja</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
