@@ -106,13 +106,15 @@ class ProjectManagerController extends Controller
      */
     public function getAvailableUsers(Project $project)
     {
-        // Get all active users except admins
+        // Get all active users except admins - always fresh from database
+        // Use fresh() to ensure we get the latest data from database
         $users = User::where('is_active', true)
             ->whereDoesntHave('roles', function($q) {
                 $q->where('name', 'admin');
             })
             ->orderBy('name')
             ->get()
+            ->fresh() // Force fresh data
             ->map(function($user) use ($project) {
                 $accessType = $project->getManagerAccessType($user->id);
                 
@@ -126,6 +128,10 @@ class ProjectManagerController extends Controller
                 ];
             });
 
-        return response()->json($users);
+        // Prevent caching of this response
+        return response()->json($users)
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
     }
 }

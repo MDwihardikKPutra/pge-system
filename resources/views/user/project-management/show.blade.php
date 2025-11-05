@@ -633,7 +633,14 @@ document.addEventListener('alpine:init', () => {
             if (!this.isAdmin) return;
             
             try {
-                const response = await fetch(`/admin/project-managers/projects/${this.projectId}/available-users`);
+                // Add cache busting parameter to ensure fresh data
+                const timestamp = new Date().getTime();
+                const response = await fetch(`/admin/project-managers/projects/${this.projectId}/available-users?t=${timestamp}`, {
+                    cache: 'no-store',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
                 const data = await response.json();
                 this.availableUsers = data;
             } catch (error) {
