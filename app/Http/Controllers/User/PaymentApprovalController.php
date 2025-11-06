@@ -68,7 +68,53 @@ class PaymentApprovalController extends Controller
             $vendorPayments = $vpQuery->orderBy('created_at', 'desc')->paginate(10, ['*'], 'vp_page');
         }
 
-        return view('user.payment-approvals.index', compact('spds', 'purchases', 'vendorPayments', 'type', 'status'));
+        // Use the same view as admin - shared view
+        return view('admin.approvals.payments.index', compact('spds', 'purchases', 'vendorPayments', 'type', 'status'));
+    }
+
+    /**
+     * Show SPD detail for approval (JSON for modal)
+     */
+    public function showSpd(SPD $spd)
+    {
+        // Check permission
+        if (!auth()->user()->hasModuleAccess('payment-approval') && !auth()->user()->hasRole('admin')) {
+            abort(403, 'USER DOES NOT HAVE THE RIGHT PERMISSIONS');
+        }
+        
+        // Use admin controller method to avoid duplication
+        $adminController = app(\App\Http\Controllers\Admin\PaymentApprovalController::class);
+        return $adminController->showSpd($spd);
+    }
+
+    /**
+     * Show Purchase detail for approval (JSON for modal)
+     */
+    public function showPurchase(Purchase $purchase)
+    {
+        // Check permission
+        if (!auth()->user()->hasModuleAccess('payment-approval') && !auth()->user()->hasRole('admin')) {
+            abort(403, 'USER DOES NOT HAVE THE RIGHT PERMISSIONS');
+        }
+        
+        // Use admin controller method to avoid duplication
+        $adminController = app(\App\Http\Controllers\Admin\PaymentApprovalController::class);
+        return $adminController->showPurchase($purchase);
+    }
+
+    /**
+     * Show Vendor Payment detail for approval (JSON for modal)
+     */
+    public function showVendorPayment(VendorPayment $vendorPayment)
+    {
+        // Check permission
+        if (!auth()->user()->hasModuleAccess('payment-approval') && !auth()->user()->hasRole('admin')) {
+            abort(403, 'USER DOES NOT HAVE THE RIGHT PERMISSIONS');
+        }
+        
+        // Use admin controller method to avoid duplication
+        $adminController = app(\App\Http\Controllers\Admin\PaymentApprovalController::class);
+        return $adminController->showVendorPayment($vendorPayment);
     }
 
     /**

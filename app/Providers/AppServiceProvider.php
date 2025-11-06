@@ -32,6 +32,9 @@ class AppServiceProvider extends ServiceProvider
         WorkPlan::class => WorkPlanPolicy::class,
         WorkRealization::class => WorkRealizationPolicy::class,
         LeaveRequest::class => LeaveRequestPolicy::class,
+        VendorPayment::class => \App\Policies\VendorPaymentPolicy::class,
+        Purchase::class => \App\Policies\PurchasePolicy::class,
+        SPD::class => \App\Policies\SpdPolicy::class,
     ];
 
     /**

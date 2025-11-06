@@ -43,18 +43,15 @@ class WorkPlanController extends Controller
             });
         
         // Filter: User can see their own work plans OR work plans from projects they manage
-        if ($isAdmin) {
-            // Admin sees all
-        } else {
-            $query->where(function($q) use ($user, $managedProjectIds) {
-                $q->where('user_id', $user->id); // Own work plans
-                
-                // OR work plans from managed projects
-                if (!empty($managedProjectIds)) {
-                    $q->orWhereIn('project_id', $managedProjectIds);
-                }
-            });
-        }
+        // Admin juga hanya melihat data mereka sendiri (pribadi)
+        $query->where(function($q) use ($user, $managedProjectIds, $isAdmin) {
+            $q->where('user_id', $user->id); // Own work plans
+            
+            // OR work plans from managed projects (for non-admin users)
+            if (!$isAdmin && !empty($managedProjectIds)) {
+                $q->orWhereIn('project_id', $managedProjectIds);
+            }
+        });
         
         $workPlans = $query->orderBy('plan_date', 'desc')->paginate(20);
         

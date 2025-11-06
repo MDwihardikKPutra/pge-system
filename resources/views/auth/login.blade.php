@@ -92,12 +92,14 @@
                 <p class="text-xs text-gray-500 mb-3 text-center">Quick Login (Development)</p>
                 <div class="grid grid-cols-2 gap-2">
                     <button type="button" onclick="quickLogin('admin@pge.local', 'password')" 
-                        class="px-3 py-2 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg text-xs font-medium text-red-700 transition-all hover:shadow-md">
-                        👨‍💼 Admin
+                        class="px-3 py-2 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg text-xs font-medium text-red-700 transition-all hover:shadow-md flex items-center justify-center gap-1.5">
+                        <x-icon type="user" class="w-4 h-4" />
+                        <span>Admin</span>
                     </button>
                     <button type="button" onclick="quickLogin('user@pge.local', 'password')" 
-                        class="px-3 py-2 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg text-xs font-medium text-green-700 transition-all hover:shadow-md">
-                        👤 User
+                        class="px-3 py-2 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg text-xs font-medium text-green-700 transition-all hover:shadow-md flex items-center justify-center gap-1.5">
+                        <x-icon type="user" class="w-4 h-4" />
+                        <span>User</span>
                     </button>
                 </div>
                 <p class="text-xs text-gray-400 mt-3 text-center">Click tombol untuk auto-fill credentials</p>

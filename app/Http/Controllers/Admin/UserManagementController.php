@@ -136,7 +136,7 @@ class UserManagementController extends Controller
                     'position' => $user->position,
                     'phone' => $user->phone,
                     'join_date' => $user->join_date?->format('Y-m-d'),
-                    'annual_leave_quota' => $user->annual_leave_quota,
+                    // 'annual_leave_quota' => $user->annual_leave_quota, // REMOVED - Kuota cuti feature removed
                     'address' => $user->address,
                     'is_active' => $user->is_active,
                     'modules' => $user->modules,

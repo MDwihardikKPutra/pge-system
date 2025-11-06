@@ -75,13 +75,49 @@ class FullDataSeeder extends Seeder
             $users[] = $userTest;
         }
 
-        // Create Vendors
+        // Create Vendors dengan data lengkap
         $vendors = [];
         $vendorData = [
-            ['name' => 'PT Teknologi Jaya', 'email' => 'info@teknologijaya.com', 'phone' => '021-12345678', 'address' => 'Jl. Sudirman No. 123, Jakarta'],
-            ['name' => 'CV Material Bangunan', 'email' => 'sales@materialbangunan.com', 'phone' => '021-87654321', 'address' => 'Jl. Gatot Subroto No. 456, Jakarta'],
-            ['name' => 'PT Konsultan Proyek', 'email' => 'contact@konsultanproyek.com', 'phone' => '021-11223344', 'address' => 'Jl. Thamrin No. 789, Jakarta'],
-            ['name' => 'CV Logistik Sejahtera', 'email' => 'info@logistiksejahtera.com', 'phone' => '021-55667788', 'address' => 'Jl. HR Rasuna Said No. 321, Jakarta'],
+            [
+                'name' => 'PT Teknologi Jaya',
+                'company' => 'PT Teknologi Jaya Sejahtera',
+                'email' => 'info@teknologijaya.com',
+                'phone' => '021-12345678',
+                'address' => 'Jl. Sudirman No. 123, Jakarta Pusat 10220',
+                'bank_name' => 'BCA',
+                'account_number' => '1234567890',
+                'account_holder' => 'PT Teknologi Jaya Sejahtera',
+            ],
+            [
+                'name' => 'CV Material Bangunan',
+                'company' => 'CV Material Bangunan Abadi',
+                'email' => 'sales@materialbangunan.com',
+                'phone' => '021-87654321',
+                'address' => 'Jl. Gatot Subroto No. 456, Jakarta Selatan 12930',
+                'bank_name' => 'Mandiri',
+                'account_number' => '2345678901',
+                'account_holder' => 'CV Material Bangunan Abadi',
+            ],
+            [
+                'name' => 'PT Konsultan Proyek',
+                'company' => 'PT Konsultan Proyek Indonesia',
+                'email' => 'contact@konsultanproyek.com',
+                'phone' => '021-11223344',
+                'address' => 'Jl. Thamrin No. 789, Jakarta Pusat 10310',
+                'bank_name' => 'BNI',
+                'account_number' => '3456789012',
+                'account_holder' => 'PT Konsultan Proyek Indonesia',
+            ],
+            [
+                'name' => 'CV Logistik Sejahtera',
+                'company' => 'CV Logistik Sejahtera Makmur',
+                'email' => 'info@logistiksejahtera.com',
+                'phone' => '021-55667788',
+                'address' => 'Jl. HR Rasuna Said No. 321, Jakarta Selatan 12950',
+                'bank_name' => 'BRI',
+                'account_number' => '4567890123',
+                'account_holder' => 'CV Logistik Sejahtera Makmur',
+            ],
         ];
 
         foreach ($vendorData as $data) {
@@ -89,8 +125,12 @@ class FullDataSeeder extends Seeder
                 ['email' => $data['email']],
                 [
                     'name' => $data['name'],
+                    'company' => $data['company'],
                     'phone' => $data['phone'],
                     'address' => $data['address'],
+                    'bank_name' => $data['bank_name'],
+                    'account_number' => $data['account_number'],
+                    'account_holder' => $data['account_holder'],
                     'is_active' => true,
                 ]
             );
@@ -150,7 +190,7 @@ class FullDataSeeder extends Seeder
         ];
 
         foreach ($users as $user) {
-            for ($i = 0; $i < 8; $i++) {
+            for ($i = 0; $i < 4; $i++) { // Kurangi dari 8 ke 4 per user
                 $planDate = Carbon::now()->subDays(rand(0, 30));
                 WorkPlan::create([
                     'work_plan_number' => 'WP-' . strtoupper(Str::random(8)),
@@ -180,7 +220,7 @@ class FullDataSeeder extends Seeder
         ];
 
         foreach ($users as $user) {
-            for ($i = 0; $i < 6; $i++) {
+            for ($i = 0; $i < 3; $i++) { // Kurangi dari 6 ke 3 per user
                 $realizationDate = Carbon::now()->subDays(rand(0, 25));
                 WorkRealization::create([
                     'realization_number' => 'WR-' . strtoupper(Str::random(8)),
@@ -202,7 +242,7 @@ class FullDataSeeder extends Seeder
         $spdCounter = 1;
         
         foreach ($users as $user) {
-            for ($i = 0; $i < 5; $i++) {
+            for ($i = 0; $i < 3; $i++) { // Kurangi dari 5 ke 3 per user
                 $departureDate = Carbon::now()->subDays(rand(0, 20));
                 $returnDate = $departureDate->copy()->addDays(rand(1, 5));
                 $destination = $destinations[array_rand($destinations)];
@@ -226,10 +266,20 @@ class FullDataSeeder extends Seeder
                 $statuses = [ApprovalStatus::PENDING, ApprovalStatus::APPROVED, ApprovalStatus::REJECTED];
                 $status = $statuses[array_rand($statuses)];
 
-                $spdNumber = 'SPD-' . Carbon::now()->format('Y') . '-' . str_pad($spdCounter++, 4, '0', STR_PAD_LEFT);
+                $spdNumber = 'SPD-' . Carbon::now()->format('Ymd') . '-' . str_pad($spdCounter++, 3, '0', STR_PAD_LEFT);
                 // Check if exists, if yes add timestamp
                 if (Spd::where('spd_number', $spdNumber)->exists()) {
-                    $spdNumber = 'SPD-' . Carbon::now()->format('Y') . '-' . str_pad($spdCounter++, 4, '0', STR_PAD_LEFT) . '-' . time();
+                    $spdNumber = 'SPD-' . Carbon::now()->format('Ymd') . '-' . str_pad($spdCounter++, 3, '0', STR_PAD_LEFT) . '-' . time();
+                }
+                
+                // Create costs array for SPD
+                $costs = [
+                    ['name' => 'Transport', 'description' => 'Biaya transportasi PP ' . $destination, 'amount' => $transportCost],
+                    ['name' => 'Hotel', 'description' => 'Biaya akomodasi ' . $days . ' malam', 'amount' => $accommodationCost],
+                    ['name' => 'Makan', 'description' => 'Biaya makan selama ' . $days . ' hari', 'amount' => $mealCost],
+                ];
+                if ($otherCost > 0) {
+                    $costs[] = ['name' => 'Lainnya', 'description' => 'Biaya parkir, tol, dan lainnya', 'amount' => $otherCost];
                 }
                 
                 $spd = Spd::create([
@@ -239,17 +289,19 @@ class FullDataSeeder extends Seeder
                     'destination' => $destination,
                     'departure_date' => $departureDate,
                     'return_date' => $returnDate,
-                    'purpose' => 'Perjalanan dinas untuk ' . $destination . ' dalam rangka koordinasi proyek',
+                    'purpose' => 'Perjalanan dinas untuk ' . $destination . ' dalam rangka koordinasi proyek dan meeting dengan stakeholder',
                     'transport_cost' => $transportCost,
                     'accommodation_cost' => $accommodationCost,
                     'meal_cost' => $mealCost,
                     'other_cost' => $otherCost,
                     'other_cost_description' => $otherCost > 0 ? 'Biaya parkir dan tol' : null,
                     'total_cost' => $totalCost,
+                    'costs' => $costs,
                     'status' => $status,
                     'notes' => 'Mohon persetujuan untuk perjalanan dinas ini',
                     'approved_by' => $status === ApprovalStatus::APPROVED ? $admin->id : null,
                     'approved_at' => $status === ApprovalStatus::APPROVED ? Carbon::now()->subDays(rand(1, 5)) : null,
+                    'rejection_reason' => $status === ApprovalStatus::REJECTED ? 'Jadwal tidak sesuai atau budget tidak mencukupi' : null,
                 ]);
             }
         }
@@ -268,7 +320,7 @@ class FullDataSeeder extends Seeder
         $purchaseCounter = 1;
 
         foreach ($users as $user) {
-            for ($i = 0; $i < 5; $i++) {
+            for ($i = 0; $i < 3; $i++) { // Kurangi dari 5 ke 3 per user
                 $quantity = rand(10, 100);
                 $unitPrice = rand(50000, 500000);
                 $totalPrice = $quantity * $unitPrice;
@@ -276,23 +328,23 @@ class FullDataSeeder extends Seeder
                 $statuses = [ApprovalStatus::PENDING, ApprovalStatus::APPROVED, ApprovalStatus::REJECTED];
                 $status = $statuses[array_rand($statuses)];
 
-                $purchaseNumber = 'PUR-' . Carbon::now()->format('Y') . '-' . str_pad($purchaseCounter++, 4, '0', STR_PAD_LEFT);
+                $purchaseNumber = 'PUR-' . Carbon::now()->format('Ymd') . '-' . str_pad($purchaseCounter++, 4, '0', STR_PAD_LEFT);
                 if (Purchase::where('purchase_number', $purchaseNumber)->exists()) {
-                    $purchaseNumber = 'PUR-' . Carbon::now()->format('Y') . '-' . str_pad($purchaseCounter++, 4, '0', STR_PAD_LEFT) . '-' . time();
+                    $purchaseNumber = 'PUR-' . Carbon::now()->format('Ymd') . '-' . str_pad($purchaseCounter++, 4, '0', STR_PAD_LEFT) . '-' . time();
                 }
                 
                 Purchase::create([
                     'purchase_number' => $purchaseNumber,
                     'user_id' => $user->id,
                     'project_id' => $projects->random()->id,
-                    'type' => ['material', 'service', 'equipment'][array_rand(['material', 'service', 'equipment'])],
-                    'category' => ['construction', 'electrical', 'plumbing'][array_rand(['construction', 'electrical', 'plumbing'])],
+                    'type' => ['barang', 'jasa'][array_rand(['barang', 'jasa'])],
+                    'category' => ['project', 'kantor', 'lainnya'][array_rand(['project', 'kantor', 'lainnya'])],
                     'item_name' => $itemNames[array_rand($itemNames)],
                     'quantity' => $quantity,
-                    'unit' => ['kg', 'pcs', 'm', 'liter'][array_rand(['kg', 'pcs', 'm', 'liter'])],
+                    'unit' => ['Unit', 'Pcs', 'Set', 'Paket', 'Box', 'Meter', 'Liter', 'Kg'][array_rand(['Unit', 'Pcs', 'Set', 'Paket', 'Box', 'Meter', 'Liter', 'Kg'])],
                     'unit_price' => $unitPrice,
                     'total_price' => $totalPrice,
-                    'description' => 'Pengadaan ' . $itemNames[array_rand($itemNames)] . ' untuk keperluan proyek',
+                    'description' => 'Pengadaan ' . $itemNames[array_rand($itemNames)] . ' untuk keperluan proyek dengan spesifikasi sesuai kebutuhan',
                     'notes' => 'Mohon persetujuan untuk pembelian ini',
                     'status' => $status,
                     'approved_by' => $status === ApprovalStatus::APPROVED ? $admin->id : null,
@@ -304,16 +356,18 @@ class FullDataSeeder extends Seeder
         // Create Vendor Payments
         $paymentCounter = 1;
         foreach ($users as $user) {
-            for ($i = 0; $i < 4; $i++) {
+            for ($i = 0; $i < 3; $i++) { // Kurangi dari 4 ke 3 per user
                 $amount = rand(5000000, 50000000);
                 $vendor = $vendors[array_rand($vendors)];
 
                 $statuses = [ApprovalStatus::PENDING, ApprovalStatus::APPROVED, ApprovalStatus::REJECTED];
                 $status = $statuses[array_rand($statuses)];
 
-                $paymentNumber = 'PAY-' . Carbon::now()->format('Y') . '-' . str_pad($paymentCounter++, 4, '0', STR_PAD_LEFT);
+                $year = Carbon::now()->format('Y');
+                $month = Carbon::now()->format('m');
+                $paymentNumber = 'VP-' . $year . '-' . $month . '-' . str_pad($paymentCounter++, 4, '0', STR_PAD_LEFT);
                 if (VendorPayment::where('payment_number', $paymentNumber)->exists()) {
-                    $paymentNumber = 'PAY-' . Carbon::now()->format('Y') . '-' . str_pad($paymentCounter++, 4, '0', STR_PAD_LEFT) . '-' . time();
+                    $paymentNumber = 'VP-' . $year . '-' . $month . '-' . str_pad($paymentCounter++, 4, '0', STR_PAD_LEFT) . '-' . time();
                 }
                 
                 VendorPayment::create([
@@ -321,13 +375,17 @@ class FullDataSeeder extends Seeder
                     'user_id' => $user->id,
                     'vendor_id' => $vendor->id,
                     'project_id' => $projects->random()->id,
+                    'payment_type' => ['project', 'kantor', 'lainnya'][array_rand(['project', 'kantor', 'lainnya'])],
                     'invoice_number' => 'INV-' . strtoupper(Str::random(8)),
+                    'po_number' => 'PO-' . strtoupper(Str::random(6)),
                     'amount' => $amount,
                     'payment_date' => Carbon::now()->subDays(rand(5, 30)),
-                    'description' => 'Pembayaran kepada ' . $vendor->name . ' untuk jasa yang telah diberikan',
+                    'description' => 'Pembayaran kepada ' . $vendor->name . ' untuk jasa yang telah diberikan sesuai dengan kontrak kerja',
+                    'notes' => 'Mohon persetujuan untuk pembayaran ini',
                     'status' => $status,
                     'approved_by' => $status === ApprovalStatus::APPROVED ? $admin->id : null,
                     'approved_at' => $status === ApprovalStatus::APPROVED ? Carbon::now()->subDays(rand(1, 5)) : null,
+                    'rejection_reason' => $status === ApprovalStatus::REJECTED ? 'Dokumen tidak lengkap atau tidak sesuai ketentuan' : null,
                 ]);
             }
         }
@@ -335,7 +393,7 @@ class FullDataSeeder extends Seeder
         // Create Leave Requests
         $leaveCounter = 1;
         foreach ($users as $user) {
-            for ($i = 0; $i < 3; $i++) {
+            for ($i = 0; $i < 2; $i++) { // Kurangi dari 3 ke 2 per user
                 $startDate = Carbon::now()->subDays(rand(0, 15));
                 $endDate = $startDate->copy()->addDays(rand(1, 5));
                 $leaveType = $leaveTypes->random();
@@ -359,6 +417,7 @@ class FullDataSeeder extends Seeder
                     'status' => $status,
                     'approved_by' => $status === ApprovalStatus::APPROVED ? $admin->id : null,
                     'approved_at' => $status === ApprovalStatus::APPROVED ? Carbon::now()->subDays(rand(1, 5)) : null,
+                    'rejection_reason' => $status === ApprovalStatus::REJECTED ? 'Jadwal cuti tidak sesuai dengan workload proyek' : null,
                 ]);
             }
         }

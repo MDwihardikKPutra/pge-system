@@ -9,10 +9,13 @@ use App\Services\LeaveService;
 use App\Enums\ApprovalStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Carbon\Carbon;
 
 class LeaveController extends Controller
 {
+    use AuthorizesRequests;
+    
     protected $leaveService;
 
     public function __construct(LeaveService $leaveService)
@@ -25,8 +28,11 @@ class LeaveController extends Controller
      */
     public function index(Request $request)
     {
-        $query = LeaveRequest::where('user_id', auth()->id())
-            ->with(['leaveType', 'approvedBy']);
+        $isAdmin = auth()->user()->hasRole('admin');
+        
+        // Admin juga hanya melihat data mereka sendiri (pribadi)
+        $query = LeaveRequest::with(['leaveType', 'approvedBy', 'user'])
+            ->where('user_id', auth()->id());
 
         if ($request->has('status')) {
             $status = ApprovalStatus::from($request->status);
@@ -36,7 +42,7 @@ class LeaveController extends Controller
         $leaves = $query->latest()->paginate(15);
         $leaveTypes = LeaveType::where('is_active', true)->orderBy('name')->get();
 
-        return view('leave.index', compact('leaves', 'leaveTypes'));
+        return view('leave.index', compact('leaves', 'leaveTypes', 'isAdmin'));
     }
 
     /**
@@ -53,6 +59,8 @@ class LeaveController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', LeaveRequest::class);
+        
         $validated = $request->validate([
             'leave_type_id' => 'required|exists:leave_types,id',
             'start_date' => 'required|date|after_or_equal:today',
@@ -68,11 +76,6 @@ class LeaveController extends Controller
             $startDate = Carbon::parse($validated['start_date']);
             $endDate = Carbon::parse($validated['end_date']);
             $totalDays = $this->leaveService->calculateTotalDays($validated['start_date'], $validated['end_date']);
-
-            // Check quota for annual leave
-            if (!$this->leaveService->hasSufficientQuota(auth()->user(), $totalDays, $leaveType->name)) {
-                return back()->with('error', 'Kuota cuti tidak mencukupi. Sisa kuota: ' . auth()->user()->remaining_leave . ' hari')->withInput();
-            }
 
             $data = [
                 'leave_type_id' => $validated['leave_type_id'],
@@ -90,7 +93,7 @@ class LeaveController extends Controller
 
             DB::commit();
             
-            // Send notification to admins about new submission
+            // Send notification to admins and users with leave-approval module about new submission
             $admins = \App\Models\User::role('admin')->get();
             foreach ($admins as $admin) {
                 $admin->notify(new \App\Notifications\NewSubmissionNotification(
@@ -99,8 +102,25 @@ class LeaveController extends Controller
                     auth()->user()
                 ));
             }
+            
+            // Send notification to users with leave-approval module access
+            $approvers = \App\Models\User::whereHas('modules', function($q) {
+                $q->where('modules.key', 'leave-approval');
+            })->get();
+            
+            foreach ($approvers as $approver) {
+                // Skip if already notified as admin
+                if (!$approver->hasRole('admin')) {
+                    $approver->notify(new \App\Notifications\NewSubmissionNotification(
+                        $leave,
+                        'leave',
+                        auth()->user()
+                    ));
+                }
+            }
 
-            return redirect()->route('user.leaves.index')
+            $routeName = auth()->user()->hasRole('admin') ? 'admin.leaves.index' : 'user.leaves.index';
+            return redirect()->route($routeName)
                 ->with('success', 'Pengajuan cuti berhasil diajukan!');
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
@@ -125,16 +145,53 @@ class LeaveController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(LeaveRequest $leave)
+    public function show($id)
     {
+        // Find the leave request manually to handle both route parameter names
+        $leave = \App\Models\LeaveRequest::findOrFail($id);
+        
         $this->authorize('view', $leave);
         
         $leave->load(['leaveType', 'user', 'approvedBy']);
 
         // Return JSON for AJAX requests (preview modal)
         if (request()->wantsJson() || request()->ajax()) {
+            $isAdmin = auth()->user()->hasRole('admin');
+            $routePrefix = $isAdmin ? 'admin.leaves' : 'user.leaves';
+            
             return response()->json([
-                'leave' => $leave,
+                'success' => true,
+                'leave' => [
+                    'id' => $leave->id,
+                    'leave_number' => $leave->leave_number,
+                    'leave_type_id' => $leave->leave_type_id,
+                    'leave_type' => $leave->leaveType ? [
+                        'id' => $leave->leaveType->id,
+                        'name' => $leave->leaveType->name,
+                    ] : null,
+                    'user' => $leave->user ? [
+                        'id' => $leave->user->id,
+                        'name' => $leave->user->name,
+                        'email' => $leave->user->email,
+                        'employee_id' => $leave->user->employee_id,
+                    ] : null,
+                    'start_date' => $leave->start_date ? $leave->start_date->format('Y-m-d') : null,
+                    'end_date' => $leave->end_date ? $leave->end_date->format('Y-m-d') : null,
+                    'total_days' => $leave->total_days,
+                    'reason' => $leave->reason,
+                    'status' => $leave->status->value ?? $leave->status,
+                    'attachment_path' => $leave->attachment_path,
+                    'attachment_name' => $leave->attachment_path ? basename($leave->attachment_path) : null,
+                    'attachment_url' => $leave->attachment_path ? route($routePrefix . '.attachment.download', $leave->id) : null,
+                    'created_at' => $leave->created_at ? $leave->created_at->format('Y-m-d H:i:s') : null,
+                    'approved_by' => $leave->approvedBy ? [
+                        'id' => $leave->approvedBy->id,
+                        'name' => $leave->approvedBy->name,
+                    ] : null,
+                    'approved_at' => $leave->approved_at ? $leave->approved_at->format('Y-m-d H:i:s') : null,
+                    'admin_notes' => $leave->admin_notes,
+                    'rejection_reason' => $leave->rejection_reason,
+                ],
             ]);
         }
 
@@ -144,8 +201,9 @@ class LeaveController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(LeaveRequest $leave)
+    public function edit($id)
     {
+        $leave = \App\Models\LeaveRequest::findOrFail($id);
         $this->authorize('update', $leave);
 
         $leaveTypes = LeaveType::where('is_active', true)->orderBy('name')->get();
@@ -156,8 +214,9 @@ class LeaveController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, LeaveRequest $leave)
+    public function update(Request $request, $id)
     {
+        $leave = \App\Models\LeaveRequest::findOrFail($id);
         $this->authorize('update', $leave);
 
         $validated = $request->validate([
@@ -172,13 +231,6 @@ class LeaveController extends Controller
             $startDate = Carbon::parse($validated['start_date']);
             $endDate = Carbon::parse($validated['end_date']);
             $totalDays = $this->leaveService->calculateTotalDays($validated['start_date'], $validated['end_date']);
-
-            $leaveType = LeaveType::find($validated['leave_type_id']);
-
-            // Check quota for annual leave
-            if (!$this->leaveService->hasSufficientQuota(auth()->user(), $totalDays, $leaveType->name)) {
-                return back()->with('error', 'Kuota cuti tidak mencukupi. Sisa kuota: ' . auth()->user()->remaining_leave . ' hari')->withInput();
-            }
 
             $updateData = [
                 'leave_type_id' => $validated['leave_type_id'],
@@ -198,7 +250,8 @@ class LeaveController extends Controller
 
             $leave->update($updateData);
 
-            return redirect()->route('user.leaves.index')
+            $routeName = auth()->user()->hasRole('admin') ? 'admin.leaves.index' : 'user.leaves.index';
+            return redirect()->route($routeName)
                 ->with('success', 'Pengajuan cuti berhasil diupdate.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
@@ -218,8 +271,9 @@ class LeaveController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(LeaveRequest $leave)
+    public function destroy($id)
     {
+        $leave = \App\Models\LeaveRequest::findOrFail($id);
         $this->authorize('delete', $leave);
 
         try {
@@ -230,7 +284,8 @@ class LeaveController extends Controller
 
             $leave->delete();
 
-            return redirect()->route('user.leaves.index')
+            $routeName = auth()->user()->hasRole('admin') ? 'admin.leaves.index' : 'user.leaves.index';
+            return redirect()->route($routeName)
                 ->with('success', 'Pengajuan cuti berhasil dihapus.');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return back()->with('error', 'Data tidak ditemukan.');
@@ -243,5 +298,26 @@ class LeaveController extends Controller
             \App\Helpers\LogHelper::logControllerError('deleting', 'LeaveRequest', $e, $leave->id);
             return back()->with('error', 'Terjadi kesalahan saat menghapus cuti. Silakan coba lagi.');
         }
+    }
+
+    /**
+     * Download attachment file
+     */
+    public function downloadAttachment($id)
+    {
+        $leave = \App\Models\LeaveRequest::findOrFail($id);
+        $this->authorize('view', $leave);
+        
+        if (!$leave->attachment_path) {
+            abort(404, 'File tidak ditemukan.');
+        }
+
+        $filePath = storage_path('app/public/' . $leave->attachment_path);
+        
+        if (!file_exists($filePath)) {
+            abort(404, 'File tidak ditemukan.');
+        }
+
+        return response()->download($filePath, basename($leave->attachment_path));
     }
 }

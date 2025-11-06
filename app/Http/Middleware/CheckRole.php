@@ -23,8 +23,15 @@ class CheckRole
             return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        // Pure Spatie Permission Check
-        if (!auth()->user()->hasRole($role)) {
+        $user = auth()->user();
+
+        // Admin can access all routes (superuser)
+        if ($user->hasRole('admin')) {
+            return $next($request);
+        }
+
+        // Pure Spatie Permission Check for other roles
+        if (!$user->hasRole($role)) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 

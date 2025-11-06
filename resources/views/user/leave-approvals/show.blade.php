@@ -63,8 +63,6 @@
         <div class="font-semibold text-blue-600">{{ $leave->total_days }} hari</div>
       </div>
       <div>
-        <div class="text-xs text-gray-500 mb-1">Sisa Kuota Cuti</div>
-        <div class="text-gray-700">{{ $leave->user->remaining_leave }} hari</div>
       </div>
     </div>
     

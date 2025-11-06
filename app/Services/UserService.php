@@ -67,7 +67,7 @@ class UserService
 
         // Set defaults
         $data['is_active'] = $data['is_active'] ?? true;
-        $data['remaining_leave'] = $data['annual_leave_quota'] ?? 12;
+        // $data['remaining_leave'] = $data['annual_leave_quota'] ?? 12; // REMOVED - Kuota cuti feature removed
 
         $user = User::create($data);
 
@@ -105,11 +105,11 @@ class UserService
             unset($data['password']);
         }
 
-        // Update remaining leave if quota changes
-        if (isset($data['annual_leave_quota']) && $data['annual_leave_quota'] != $user->annual_leave_quota) {
-            $difference = $data['annual_leave_quota'] - $user->annual_leave_quota;
-            $data['remaining_leave'] = $user->remaining_leave + $difference;
-        }
+        // Update remaining leave if quota changes - REMOVED - Kuota cuti feature removed
+        // if (isset($data['annual_leave_quota']) && $data['annual_leave_quota'] != $user->annual_leave_quota) {
+        //     $difference = $data['annual_leave_quota'] - $user->annual_leave_quota;
+        //     $data['remaining_leave'] = $user->remaining_leave + $difference;
+        // }
 
         $user->update($data);
 
@@ -239,8 +239,8 @@ class UserService
             'position' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
             'join_date' => 'nullable|date',
-            'annual_leave_quota' => 'nullable|integer|min:0|max:30',
-            'remaining_leave' => 'nullable|integer|min:0',
+            // 'annual_leave_quota' => 'nullable|integer|min:0|max:30', // REMOVED - Kuota cuti feature removed
+            // 'remaining_leave' => 'nullable|integer|min:0', // REMOVED - Kuota cuti feature removed
             'address' => 'nullable|string',
             'is_active' => 'boolean',
             'modules' => 'sometimes|array',

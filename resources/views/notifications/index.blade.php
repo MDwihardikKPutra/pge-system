@@ -23,9 +23,16 @@
             @forelse($notifications as $notification)
             <div class="px-6 py-4 hover:bg-slate-50 transition-colors {{ $notification->read_at ? '' : 'bg-blue-50' }}">
                 <div class="flex items-start gap-4">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-xl"
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
                          style="background-color: {{ $notification->data['color'] === 'green' ? '#dcfce7' : ($notification->data['color'] === 'red' ? '#fee2e2' : '#dbeafe') }};">
-                        {{ $notification->data['icon'] ?? '📄' }}
+                        @php
+                            $icon = $notification->data['icon'] ?? 'document';
+                            $emojiIcons = ['📄', '📋', '✅', '✈️', '🛒', '💳', '🏝️', '📁'];
+                            if (in_array($icon, $emojiIcons)) {
+                                $icon = 'document';
+                            }
+                        @endphp
+                        <x-icon type="{{ $icon }}" class="w-5 h-5" />
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-start justify-between gap-4">

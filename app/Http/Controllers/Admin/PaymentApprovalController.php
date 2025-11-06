@@ -75,6 +75,12 @@ class PaymentApprovalController extends Controller
      */
     public function showSpd(SPD $spd)
     {
+        // Check access - admin always has access, or user with payment-approval module
+        $user = auth()->user();
+        if (!$user->hasRole('admin') && !$user->hasModuleAccess('payment-approval')) {
+            abort(403, 'USER DOES NOT HAVE THE RIGHT PERMISSIONS');
+        }
+        
         $spd->load(['user', 'project', 'approvedBy']);
         return response()->json([
             'success' => true,
@@ -191,6 +197,12 @@ class PaymentApprovalController extends Controller
      */
     public function showPurchase(Purchase $purchase)
     {
+        // Check access - admin always has access, or user with payment-approval module
+        $user = auth()->user();
+        if (!$user->hasRole('admin') && !$user->hasModuleAccess('payment-approval')) {
+            abort(403, 'USER DOES NOT HAVE THE RIGHT PERMISSIONS');
+        }
+        
         $purchase->load(['user', 'project', 'approvedBy']);
         return response()->json([
             'success' => true,
@@ -305,6 +317,12 @@ class PaymentApprovalController extends Controller
      */
     public function showVendorPayment(VendorPayment $vendorPayment)
     {
+        // Check access - admin always has access, or user with payment-approval module
+        $user = auth()->user();
+        if (!$user->hasRole('admin') && !$user->hasModuleAccess('payment-approval')) {
+            abort(403, 'USER DOES NOT HAVE THE RIGHT PERMISSIONS');
+        }
+        
         $vendorPayment->load(['user', 'vendor', 'project', 'approvedBy']);
         return response()->json([
             'success' => true,

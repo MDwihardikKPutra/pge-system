@@ -58,11 +58,12 @@ class ApprovalController extends Controller
                 'start_date' => $leave->start_date->format('d M Y'),
                 'end_date' => $leave->end_date->format('d M Y'),
                 'total_days' => $leave->total_days,
-                'remaining_leave' => $leave->user->remaining_leave ?? 0,
                 'reason' => $leave->reason,
                 'attachment_path' => $leave->attachment_path,
                 'attachment_name' => $leave->attachment_path ? basename($leave->attachment_path) : null,
-                'attachment_url' => $leave->attachment_path ? \Storage::url($leave->attachment_path) : null,
+                'attachment_url' => $leave->attachment_path ? (request()->routeIs('admin.*') 
+                    ? route('admin.approvals.leaves.attachment.download', $leave->id)
+                    : route('user.leave-approvals.attachment.download', $leave->id)) : null,
                 'admin_notes' => $leave->admin_notes,
                 'rejection_reason' => $leave->rejection_reason,
                 'status' => $leave->status->value,
@@ -157,5 +158,29 @@ class ApprovalController extends Controller
             \App\Helpers\LogHelper::logControllerError('rejecting', 'LeaveRequest', $e, $leave->id, $request->except(['_token']));
             return back()->with('error', 'Terjadi kesalahan saat menolak cuti. Silakan coba lagi.');
         }
+    }
+
+    /**
+     * Download attachment file for leave request
+     */
+    public function downloadAttachment(LeaveRequest $leave)
+    {
+        // Check access - admin always has access, or user with leave-approval module
+        $user = auth()->user();
+        if (!$user->hasRole('admin') && !$user->hasModuleAccess('leave-approval')) {
+            abort(403, 'USER DOES NOT HAVE THE RIGHT PERMISSIONS');
+        }
+        
+        if (!$leave->attachment_path) {
+            abort(404, 'File tidak ditemukan.');
+        }
+
+        $filePath = storage_path('app/public/' . $leave->attachment_path);
+        
+        if (!file_exists($filePath)) {
+            abort(404, 'File tidak ditemukan.');
+        }
+
+        return response()->download($filePath, basename($leave->attachment_path));
     }
 }

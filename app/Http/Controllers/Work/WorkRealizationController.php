@@ -45,18 +45,15 @@ class WorkRealizationController extends Controller
             });
         
         // Filter: User can see their own work realizations OR work realizations from projects they manage
-        if ($isAdmin) {
-            // Admin sees all
-        } else {
-            $query->where(function($q) use ($user, $managedProjectIds) {
-                $q->where('user_id', $user->id); // Own work realizations
-                
-                // OR work realizations from managed projects
-                if (!empty($managedProjectIds)) {
-                    $q->orWhereIn('project_id', $managedProjectIds);
-                }
-            });
-        }
+        // Admin juga hanya melihat data mereka sendiri (pribadi)
+        $query->where(function($q) use ($user, $managedProjectIds, $isAdmin) {
+            $q->where('user_id', $user->id); // Own work realizations
+            
+            // OR work realizations from managed projects (for non-admin users)
+            if (!$isAdmin && !empty($managedProjectIds)) {
+                $q->orWhereIn('project_id', $managedProjectIds);
+            }
+        });
         
         $workRealizations = $query->orderBy('realization_date', 'desc')->paginate(20);
         

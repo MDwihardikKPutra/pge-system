@@ -2,22 +2,24 @@
 
 namespace App\Http\Controllers\Payment;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
 use App\Models\SPD;
-use App\Models\Project;
 use App\Services\PaymentService;
 use App\Traits\ChecksAuthorization;
 use App\Enums\ApprovalStatus;
 use App\Http\Requests\StoreSpdRequest;
 use App\Http\Requests\UpdateSpdRequest;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
-class SpdController extends Controller
+class SpdController extends BaseController
 {
-    use ChecksAuthorization;
+    use AuthorizesRequests, ChecksAuthorization;
 
-    protected $paymentService;
+    protected PaymentService $paymentService;
 
     public function __construct(PaymentService $paymentService)
     {
@@ -27,15 +29,13 @@ class SpdController extends Controller
     /**
      * Display a listing of SPDs
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $status = $request->get('status', 'all');
         
-        // Admin can see all SPDs, user only sees their own
-        $query = SPD::with(['project', 'approvedBy', 'user']);
-        if (!$this->isAdmin()) {
-            $query->where('user_id', auth()->id());
-        }
+        // Admin juga hanya melihat data mereka sendiri (pribadi)
+        $query = SPD::with(['project', 'approvedBy', 'user'])
+            ->where('user_id', auth()->id());
         
         $spds = $query->when($status !== 'all', function ($q) use ($status) {
                 $statusEnum = ApprovalStatus::from($status);
@@ -52,7 +52,7 @@ class SpdController extends Controller
     /**
      * Display the specified SPD (for AJAX)
      */
-    public function show(SPD $spd)
+    public function show(SPD $spd): JsonResponse
     {
         // Eager load relationships to avoid N+1 queries
         $spd->load(['project', 'approvedBy']);
@@ -116,149 +116,71 @@ class SpdController extends Controller
     /**
      * Store a newly created SPD
      */
-    public function store(StoreSpdRequest $request)
+    public function store(StoreSpdRequest $request): RedirectResponse
     {
         $validated = $request->validated();
 
-        try {
-            DB::beginTransaction();
-
-            // Process costs using service
-            $costData = $this->paymentService->processCostsFromRequest($validated);
-
-            $spd = SPD::create([
-                'spd_number' => $this->paymentService->generateSpdNumber(),
-                'user_id' => auth()->id(),
-                'project_id' => $validated['project_id'],
-                'destination' => $validated['destination'],
-                'departure_date' => $validated['departure_date'],
-                'return_date' => $validated['return_date'],
-                'purpose' => $validated['purpose'],
-                'transport_cost' => $costData['transport_cost'],
-                'accommodation_cost' => $costData['accommodation_cost'],
-                'meal_cost' => $costData['meal_cost'],
-                'other_cost' => $costData['other_cost'],
-                'other_cost_description' => $costData['other_cost_description'],
-                'total_cost' => $costData['total_cost'],
-                'notes' => $validated['notes'] ?? null,
-                'costs' => $costData['costs'],
-                'status' => ApprovalStatus::PENDING,
-            ]);
-
-            DB::commit();
-            
-            // Send notification to admins about new submission
-            $admins = \App\Models\User::role('admin')->get();
-            foreach ($admins as $admin) {
-                $admin->notify(new \App\Notifications\NewSubmissionNotification(
-                    $spd,
-                    'spd',
-                    auth()->user()
-                ));
-            }
-
-            // Redirect based on route prefix (admin or user)
-            $routePrefix = request()->is('admin/*') ? 'admin' : 'user';
-            return redirect()->route($routePrefix . '.spd.index')->with('success', 'SPD berhasil diajukan!');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            DB::rollBack();
-            return back()->withErrors($e->errors())->withInput();
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            DB::rollBack();
-            return back()->with('error', 'Data tidak ditemukan.')->withInput();
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
-            DB::rollBack();
-            abort(403, $e->getMessage());
-        } catch (\App\Exceptions\PaymentException $e) {
-            DB::rollBack();
-            \App\Helpers\LogHelper::logControllerError('creating', 'SPD', $e, null, $request->except(['_token', 'documents']));
-            return back()->with('error', $e->getMessage())->withInput();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            \App\Helpers\LogHelper::logControllerError('creating', 'SPD', $e, null, $request->except(['_token', 'documents']));
-            return back()->with('error', 'Terjadi kesalahan saat mengajukan SPD. Silakan coba lagi.')->withInput();
-        }
+        return $this->handleTransaction(
+            function () use ($validated) {
+                $spd = $this->paymentService->createSpd($validated, auth()->id());
+                
+                // Send notification to admins about new submission
+                $this->notifyAdmins($spd, 'spd');
+                
+                return null; // Let handleTransaction handle redirect
+            },
+            'creating',
+            'SPD',
+            $request,
+            null,
+            'SPD berhasil diajukan!',
+            'Terjadi kesalahan saat mengajukan SPD. Silakan coba lagi.',
+            'spd.index'
+        );
     }
 
     /**
      * Update the specified SPD
      */
-    public function update(UpdateSpdRequest $request, SPD $spd)
+    public function update(UpdateSpdRequest $request, SPD $spd): RedirectResponse
     {
         $this->authorize('update', $spd);
 
         $validated = $request->validated();
 
-        try {
-            DB::beginTransaction();
-
-            // Process costs using service
-            $costData = $this->paymentService->processCostsFromRequest($validated);
-
-            $spd->update([
-                'project_id' => $validated['project_id'],
-                'destination' => $validated['destination'],
-                'departure_date' => $validated['departure_date'],
-                'return_date' => $validated['return_date'],
-                'purpose' => $validated['purpose'],
-                'transport_cost' => $costData['transport_cost'],
-                'accommodation_cost' => $costData['accommodation_cost'],
-                'meal_cost' => $costData['meal_cost'],
-                'other_cost' => $costData['other_cost'],
-                'other_cost_description' => $costData['other_cost_description'],
-                'total_cost' => $costData['total_cost'],
-                'notes' => $validated['notes'] ?? null,
-                'costs' => $costData['costs'],
-            ]);
-
-            DB::commit();
-            
-            // Redirect based on route prefix (admin or user)
-            $routePrefix = request()->is('admin/*') ? 'admin' : 'user';
-            return redirect()->route($routePrefix . '.spd.index')->with('success', 'SPD berhasil diupdate!');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            DB::rollBack();
-            return back()->withErrors($e->errors())->withInput();
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            DB::rollBack();
-            return back()->with('error', 'Data tidak ditemukan.')->withInput();
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
-            DB::rollBack();
-            abort(403, $e->getMessage());
-        } catch (\App\Exceptions\PaymentException $e) {
-            DB::rollBack();
-            \App\Helpers\LogHelper::logControllerError('updating', 'SPD', $e, $spd->id, $request->except(['_token', 'documents']));
-            return back()->with('error', $e->getMessage())->withInput();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            \App\Helpers\LogHelper::logControllerError('updating', 'SPD', $e, $spd->id, $request->except(['_token', 'documents']));
-            return back()->with('error', 'Terjadi kesalahan saat mengupdate SPD. Silakan coba lagi.')->withInput();
-        }
+        return $this->handleTransaction(
+            function () use ($validated, $spd) {
+                return $this->paymentService->updateSpd($spd, $validated);
+            },
+            'updating',
+            'SPD',
+            $request,
+            $spd->id,
+            'SPD berhasil diupdate!',
+            'Terjadi kesalahan saat mengupdate SPD. Silakan coba lagi.',
+            'spd.index'
+        );
     }
 
     /**
      * Remove the specified SPD
      */
-    public function destroy(SPD $spd)
+    public function destroy(SPD $spd): RedirectResponse
     {
         $this->authorize('delete', $spd);
 
-        try {
-            $spd->delete();
-            
-            // Redirect based on route prefix (admin or user)
-            $routePrefix = request()->is('admin/*') ? 'admin' : 'user';
-            return redirect()->route($routePrefix . '.spd.index')->with('success', 'SPD berhasil dihapus!');
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return back()->with('error', 'Data tidak ditemukan.');
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
-            abort(403, $e->getMessage());
-        } catch (\App\Exceptions\PaymentException $e) {
-            \App\Helpers\LogHelper::logControllerError('deleting', 'SPD', $e, $spd->id);
-            return back()->with('error', $e->getMessage());
-        } catch (\Exception $e) {
-            \App\Helpers\LogHelper::logControllerError('deleting', 'SPD', $e, $spd->id);
-            return back()->with('error', 'Terjadi kesalahan saat menghapus SPD. Silakan coba lagi.');
-        }
+        return $this->handleOperation(
+            function () use ($spd) {
+                $spd->delete();
+                
+                $routePrefix = $this->getRoutePrefix();
+                $route = $routePrefix ? "{$routePrefix}.spd.index" : 'spd.index';
+                return redirect()->route($route)->with('success', 'SPD berhasil dihapus!');
+            },
+            'deleting',
+            'SPD',
+            null,
+            $spd->id
+        );
     }
 }

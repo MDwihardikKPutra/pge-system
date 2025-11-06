@@ -20,15 +20,18 @@ class LeaveApprovalController extends Controller
     public function __construct(LeaveService $leaveService)
     {
         $this->leaveService = $leaveService;
-        // Check if user has access to leave approval module
-        $this->middleware(function ($request, $next) {
-            $user = auth()->user();
-            // Admin always has access, or user with leave-approval module access
-            if ($user->hasRole('admin') || $user->hasModuleAccess('leave-approval')) {
-                return $next($request);
-            }
-            abort(403, 'Anda tidak memiliki akses ke halaman ini');
-        });
+    }
+    
+    /**
+     * Check if user has access to leave approval module
+     */
+    protected function checkAccess()
+    {
+        $user = auth()->user();
+        // Admin always has access, or user with leave-approval module access
+        if (!$user->hasRole('admin') && !$user->hasModuleAccess('leave-approval')) {
+            abort(403, 'USER DOES NOT HAVE THE RIGHT PERMISSIONS');
+        }
     }
 
     /**
@@ -36,6 +39,7 @@ class LeaveApprovalController extends Controller
      */
     public function index(Request $request)
     {
+        $this->checkAccess();
         $status = $request->get('status', 'all');
         
         $leaveList = LeaveRequest::with(['user', 'leaveType', 'approvedBy'])
@@ -46,7 +50,8 @@ class LeaveApprovalController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-        return view('user.leave-approvals.index', compact('leaveList', 'status'));
+        // Use the same view as admin - shared view
+        return view('admin.approvals.leaves.index', compact('leaveList', 'status'));
     }
 
     /**
@@ -54,9 +59,50 @@ class LeaveApprovalController extends Controller
      */
     public function show(LeaveRequest $leave)
     {
+        $this->checkAccess();
         $leave->load(['user', 'leaveType', 'approvedBy']);
         
+        // Return JSON for modal (like admin)
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $leave->id,
+                    'leave_number' => $leave->leave_number,
+                    'user' => $leave->user->name,
+                    'employee_id' => $leave->user->employee_id ?? '-',
+                    'leave_type' => $leave->leaveType->name,
+                    'start_date' => $leave->start_date->format('d M Y'),
+                    'end_date' => $leave->end_date->format('d M Y'),
+                    'total_days' => $leave->total_days,
+                    'reason' => $leave->reason,
+                    'attachment_path' => $leave->attachment_path,
+                    'attachment_name' => $leave->attachment_path ? basename($leave->attachment_path) : null,
+                    'attachment_url' => $leave->attachment_path ? route('user.leave-approvals.attachment.download', $leave->id) : null,
+                    'admin_notes' => $leave->admin_notes,
+                    'rejection_reason' => $leave->rejection_reason,
+                    'status' => $leave->status->value,
+                    'approved_by' => $leave->approvedBy->name ?? '-',
+                    'approved_at' => $leave->approved_at ? $leave->approved_at->format('d M Y H:i') : '-',
+                    'created_at' => $leave->created_at->format('d M Y H:i'),
+                ]
+            ]);
+        }
+        
         return view('user.leave-approvals.show', compact('leave'));
+    }
+    
+    /**
+     * Download attachment file for leave request
+     * Redirects to admin controller to avoid duplication
+     */
+    public function downloadAttachment(LeaveRequest $leave)
+    {
+        $this->checkAccess();
+        
+        // Use admin controller method to avoid duplication
+        $adminController = app(\App\Http\Controllers\Admin\ApprovalController::class);
+        return $adminController->downloadAttachment($leave);
     }
 
     /**
@@ -64,6 +110,7 @@ class LeaveApprovalController extends Controller
      */
     public function approve(Request $request, LeaveRequest $leave)
     {
+        $this->checkAccess();
         $request->validate([
             'admin_notes' => 'nullable|string|max:500',
         ]);
@@ -106,6 +153,7 @@ class LeaveApprovalController extends Controller
      */
     public function reject(Request $request, LeaveRequest $leave)
     {
+        $this->checkAccess();
         $request->validate([
             'rejection_reason' => 'required|string|max:500',
         ]);

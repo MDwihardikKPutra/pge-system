@@ -20,10 +20,13 @@ class DatabaseSeeder extends Seeder
             LeaveTypeSeeder::class,           // 3. Seed leave types
             ProjectSeeder::class,             // 4. Seed projects
             ChangelogSeeder::class,           // 5. Seed changelog entries
+            UserSeeder::class,                // 6. Seed users
+            VendorSeeder::class,              // 7. Seed vendors
+            ProjectManagerSeeder::class,      // 8. Assign project managers
+            WorkDataSeeder::class,            // 9. Seed work plans and realizations
+            PaymentDataSeeder::class,         // 10. Seed SPD, Purchases, Vendor Payments
+            LeaveDataSeeder::class,           // 11. Seed leave requests
         ]);
-        
-        // Seed full sample data (users, vendors, work plans, realizations, payments, leaves)
-        $this->call([FullDataSeeder::class]);
 
         // Buat user admin default jika belum ada
         if (!User::where('email', 'admin@pge.local')->exists()) {

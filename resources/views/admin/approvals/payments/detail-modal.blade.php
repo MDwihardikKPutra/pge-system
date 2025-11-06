@@ -88,17 +88,21 @@ async function loadDetailData(type, id) {
     const title = document.getElementById('detail-modal-title');
     const subtitle = document.getElementById('detail-modal-subtitle');
     
+    // Determine base URL based on current route
+    const isAdminRoute = window.location.pathname.includes('/admin/');
+    const baseUrl = isAdminRoute ? '/admin/approvals/payments' : '/user/payment-approvals';
+    
     let url = '';
     let titleText = '';
     
     if (type === 'spd') {
-        url = `/admin/approvals/payments/spd/${id}`;
+        url = `${baseUrl}/spd/${id}`;
         titleText = 'Detail SPD';
     } else if (type === 'purchase') {
-        url = `/admin/approvals/payments/purchases/${id}`;
+        url = `${baseUrl}/purchases/${id}`;
         titleText = 'Detail Pembelian';
     } else if (type === 'vendor-payment') {
-        url = `/admin/approvals/payments/vendor-payments/${id}`;
+        url = `${baseUrl}/vendor-payments/${id}`;
         titleText = 'Detail Pembayaran Vendor';
     }
     
@@ -445,12 +449,11 @@ function generateVendorPaymentDetail(data) {
 
 function generateApprovalFooter(type, id) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-    const actionUrl = `/admin/approvals/payments/${type === 'spd' ? 'spd' : type === 'purchase' ? 'purchases' : 'vendor-payments'}/${id}/approve`;
     
     return `
         <div class="flex justify-between items-center w-full">
             <div class="flex-1 mr-4">
-                <form id="approve-form-${type}-${id}" method="POST" action="${actionUrl}" class="flex gap-2" onsubmit="event.preventDefault(); submitApproveForm('${type}', ${id});">
+                <form id="approve-form-${type}-${id}" method="POST" class="flex gap-2" onsubmit="event.preventDefault(); submitApproveForm('${type}', ${id});">
                     <input type="hidden" name="_token" value="${csrfToken}">
                     <input type="text" name="notes" id="approve-notes-${type}-${id}" placeholder="Catatan (Opsional)" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500">
                     <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700">
@@ -472,7 +475,11 @@ async function submitApproveForm(type, id) {
     const form = document.getElementById(`approve-form-${type}-${id}`);
     const formData = new FormData(form);
     
-    const actionUrl = `/admin/approvals/payments/${type === 'spd' ? 'spd' : type === 'purchase' ? 'purchases' : 'vendor-payments'}/${id}/approve`;
+    // Determine base URL based on current route
+    const isAdminRoute = window.location.pathname.includes('/admin/');
+    const baseUrl = isAdminRoute ? '/admin/approvals/payments' : '/user/payment-approvals';
+    const typePath = type === 'spd' ? 'spd' : type === 'purchase' ? 'purchases' : 'vendor-payments';
+    const actionUrl = `${baseUrl}/${typePath}/${id}/approve`;
     
     try {
         const response = await fetch(actionUrl, {

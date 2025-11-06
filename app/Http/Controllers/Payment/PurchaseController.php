@@ -2,22 +2,24 @@
 
 namespace App\Http\Controllers\Payment;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
 use App\Models\Purchase;
-use App\Models\Project;
 use App\Services\PaymentService;
 use App\Traits\ChecksAuthorization;
 use App\Enums\ApprovalStatus;
 use App\Http\Requests\StorePurchaseRequest;
 use App\Http\Requests\UpdatePurchaseRequest;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
-class PurchaseController extends Controller
+class PurchaseController extends BaseController
 {
-    use ChecksAuthorization;
+    use AuthorizesRequests, ChecksAuthorization;
 
-    protected $paymentService;
+    protected PaymentService $paymentService;
 
     public function __construct(PaymentService $paymentService)
     {
@@ -27,15 +29,13 @@ class PurchaseController extends Controller
     /**
      * Display a listing of Purchases
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $status = $request->get('status', 'all');
         
-        // Admin can see all Purchases, user only sees their own
-        $query = Purchase::with(['project', 'approvedBy', 'user']);
-        if (!$this->isAdmin()) {
-            $query->where('user_id', auth()->id());
-        }
+        // Admin juga hanya melihat data mereka sendiri (pribadi)
+        $query = Purchase::with(['project', 'approvedBy', 'user'])
+            ->where('user_id', auth()->id());
         
         $purchases = $query->when($status !== 'all', function ($q) use ($status) {
                 $statusEnum = ApprovalStatus::from($status);
@@ -52,7 +52,7 @@ class PurchaseController extends Controller
     /**
      * Display the specified Purchase (for AJAX)
      */
-    public function show(Purchase $purchase)
+    public function show(Purchase $purchase): JsonResponse
     {
         // Eager load relationships to avoid N+1 queries
         $purchase->load(['project', 'approvedBy']);
@@ -88,147 +88,71 @@ class PurchaseController extends Controller
     /**
      * Store a newly created Purchase
      */
-    public function store(StorePurchaseRequest $request)
+    public function store(StorePurchaseRequest $request): RedirectResponse
     {
         $validated = $request->validated();
 
-        try {
-            DB::beginTransaction();
-
-            $totalPrice = $this->paymentService->calculatePurchaseTotalPrice(
-                $validated['unit_price'],
-                $validated['quantity']
-            );
-
-            $purchase = Purchase::create([
-                'purchase_number' => $this->paymentService->generatePurchaseNumber(),
-                'user_id' => auth()->id(),
-                'project_id' => $validated['project_id'],
-                'type' => $validated['type'],
-                'category' => $validated['category'],
-                'item_name' => $validated['item_name'],
-                'description' => $validated['description'],
-                'quantity' => $validated['quantity'],
-                'unit' => $validated['unit'],
-                'unit_price' => $validated['unit_price'],
-                'total_price' => $totalPrice,
-                'notes' => $validated['notes'] ?? null,
-                'status' => ApprovalStatus::PENDING,
-            ]);
-
-            DB::commit();
-            
-            // Send notification to admins about new submission
-            $admins = \App\Models\User::role('admin')->get();
-            foreach ($admins as $admin) {
-                $admin->notify(new \App\Notifications\NewSubmissionNotification(
-                    $purchase,
-                    'purchase',
-                    auth()->user()
-                ));
-            }
-            
-            // Redirect based on route prefix (admin or user)
-            $routePrefix = request()->is('admin/*') ? 'admin' : 'user';
-            return redirect()->route($routePrefix . '.purchases.index')->with('success', 'Pembelian berhasil diajukan!');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            DB::rollBack();
-            return back()->withErrors($e->errors())->withInput();
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            DB::rollBack();
-            return back()->with('error', 'Data tidak ditemukan.')->withInput();
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
-            DB::rollBack();
-            abort(403, $e->getMessage());
-        } catch (\App\Exceptions\PaymentException $e) {
-            DB::rollBack();
-            \App\Helpers\LogHelper::logControllerError('creating', 'Purchase', $e, null, $request->except(['_token', 'documents']));
-            return back()->with('error', $e->getMessage())->withInput();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            \App\Helpers\LogHelper::logControllerError('creating', 'Purchase', $e, null, $request->except(['_token', 'documents']));
-            return back()->with('error', 'Terjadi kesalahan saat mengajukan pembelian. Silakan coba lagi.')->withInput();
-        }
+        return $this->handleTransaction(
+            function () use ($validated) {
+                $purchase = $this->paymentService->createPurchase($validated, auth()->id());
+                
+                // Send notification to admins about new submission
+                $this->notifyAdmins($purchase, 'purchase');
+                
+                return null; // Let handleTransaction handle redirect
+            },
+            'creating',
+            'Purchase',
+            $request,
+            null,
+            'Pembelian berhasil diajukan!',
+            'Terjadi kesalahan saat mengajukan pembelian. Silakan coba lagi.',
+            'purchases.index'
+        );
     }
 
     /**
      * Update the specified Purchase
      */
-    public function update(UpdatePurchaseRequest $request, Purchase $purchase)
+    public function update(UpdatePurchaseRequest $request, Purchase $purchase): RedirectResponse
     {
         $this->authorize('update', $purchase);
 
         $validated = $request->validated();
 
-        try {
-            DB::beginTransaction();
-
-            $totalPrice = $this->paymentService->calculatePurchaseTotalPrice(
-                $validated['unit_price'],
-                $validated['quantity']
-            );
-
-            $purchase->update([
-                'project_id' => $validated['project_id'],
-                'type' => $validated['type'],
-                'category' => $validated['category'],
-                'item_name' => $validated['item_name'],
-                'description' => $validated['description'],
-                'quantity' => $validated['quantity'],
-                'unit' => $validated['unit'],
-                'unit_price' => $validated['unit_price'],
-                'total_price' => $totalPrice,
-                'notes' => $validated['notes'] ?? null,
-            ]);
-
-            DB::commit();
-            
-            // Redirect based on route prefix (admin or user)
-            $routePrefix = request()->is('admin/*') ? 'admin' : 'user';
-            return redirect()->route($routePrefix . '.purchases.index')->with('success', 'Pembelian berhasil diupdate!');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            DB::rollBack();
-            return back()->withErrors($e->errors())->withInput();
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            DB::rollBack();
-            return back()->with('error', 'Data tidak ditemukan.')->withInput();
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
-            DB::rollBack();
-            abort(403, $e->getMessage());
-        } catch (\App\Exceptions\PaymentException $e) {
-            DB::rollBack();
-            \App\Helpers\LogHelper::logControllerError('updating', 'Purchase', $e, $purchase->id, $request->except(['_token', 'documents']));
-            return back()->with('error', $e->getMessage())->withInput();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            \App\Helpers\LogHelper::logControllerError('updating', 'Purchase', $e, $purchase->id, $request->except(['_token', 'documents']));
-            return back()->with('error', 'Terjadi kesalahan saat mengupdate pembelian. Silakan coba lagi.')->withInput();
-        }
+        return $this->handleTransaction(
+            function () use ($validated, $purchase) {
+                return $this->paymentService->updatePurchase($purchase, $validated);
+            },
+            'updating',
+            'Purchase',
+            $request,
+            $purchase->id,
+            'Pembelian berhasil diupdate!',
+            'Terjadi kesalahan saat mengupdate pembelian. Silakan coba lagi.',
+            'purchases.index'
+        );
     }
 
     /**
      * Remove the specified Purchase
      */
-    public function destroy(Purchase $purchase)
+    public function destroy(Purchase $purchase): RedirectResponse
     {
         $this->authorize('delete', $purchase);
 
-        try {
-            $purchase->delete();
-            
-            // Redirect based on route prefix (admin or user)
-            $routePrefix = request()->is('admin/*') ? 'admin' : 'user';
-            return redirect()->route($routePrefix . '.purchases.index')->with('success', 'Pembelian berhasil dihapus!');
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return back()->with('error', 'Data tidak ditemukan.');
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
-            abort(403, $e->getMessage());
-        } catch (\App\Exceptions\PaymentException $e) {
-            \App\Helpers\LogHelper::logControllerError('deleting', 'Purchase', $e, $purchase->id);
-            return back()->with('error', $e->getMessage());
-        } catch (\Exception $e) {
-            \App\Helpers\LogHelper::logControllerError('deleting', 'Purchase', $e, $purchase->id);
-            return back()->with('error', 'Terjadi kesalahan saat menghapus pembelian. Silakan coba lagi.');
-        }
+        return $this->handleOperation(
+            function () use ($purchase) {
+                $purchase->delete();
+                
+                $routePrefix = $this->getRoutePrefix();
+                $route = $routePrefix ? "{$routePrefix}.purchases.index" : 'purchases.index';
+                return redirect()->route($route)->with('success', 'Pembelian berhasil dihapus!');
+            },
+            'deleting',
+            'Purchase',
+            null,
+            $purchase->id
+        );
     }
 }

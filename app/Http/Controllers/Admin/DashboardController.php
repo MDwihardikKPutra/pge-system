@@ -42,6 +42,8 @@ class DashboardController extends Controller
                 if (strpos($moduleInfo['route'], 'user.') === 0) {
                     if ($moduleInfo['route'] === 'user.payment-approvals.index') {
                         $moduleInfo['route'] = 'admin.approvals.payments.index';
+                    } elseif ($moduleInfo['route'] === 'user.leave-approvals.index') {
+                        $moduleInfo['route'] = 'admin.approvals.leaves';
                     } else {
                         $moduleInfo['route'] = str_replace('user.', 'admin.', $moduleInfo['route']);
                     }
@@ -105,6 +107,16 @@ class DashboardController extends Controller
                     $moduleInfo['count'] = $query->count();
                     $moduleInfo['recent'] = LeaveRequest::with(['user', 'leaveType'])
                         ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+                        ->orderBy('created_at', 'desc')
+                        ->limit(3)
+                        ->get();
+                    break;
+                    
+                case 'leave-approval':
+                    $query = LeaveRequest::where('status', ApprovalStatus::PENDING);
+                    $moduleInfo['count'] = $query->count();
+                    $moduleInfo['recent'] = LeaveRequest::with(['user', 'leaveType'])
+                        ->where('status', ApprovalStatus::PENDING)
                         ->orderBy('created_at', 'desc')
                         ->limit(3)
                         ->get();
@@ -186,7 +198,7 @@ class DashboardController extends Controller
                 $activities->push([
                     'id' => $plan->id,
                 'type' => 'work-plan',
-                'icon' => '📋',
+                'icon' => 'clipboard-document',
                 'title' => 'Rencana Kerja',
                 'user' => $plan->user->name ?? '-',
                     'user_email' => $plan->user->email ?? '-',
@@ -214,7 +226,7 @@ class DashboardController extends Controller
                 $activities->push([
                     'id' => $realization->id,
                 'type' => 'work-realization',
-                'icon' => '✅',
+                'icon' => 'check-circle',
                     'title' => 'Realisasi Kerja',
                 'user' => $realization->user->name ?? '-',
                     'user_email' => $realization->user->email ?? '-',
@@ -243,7 +255,7 @@ class DashboardController extends Controller
                 $activities->push([
                     'id' => $spd->id,
                 'type' => 'spd',
-                'icon' => '✈️',
+                'icon' => 'paper-airplane',
                 'title' => 'SPD',
                 'user' => $spd->user->name ?? '-',
                     'user_email' => $spd->user->email ?? '-',
@@ -276,7 +288,7 @@ class DashboardController extends Controller
                 $activities->push([
                     'id' => $purchase->id,
                 'type' => 'purchase',
-                'icon' => '🛒',
+                'icon' => 'shopping-cart',
                 'title' => 'Pembelian',
                 'user' => $purchase->user->name ?? '-',
                     'user_email' => $purchase->user->email ?? '-',
@@ -310,7 +322,7 @@ class DashboardController extends Controller
                 $activities->push([
                     'id' => $vendorPayment->id,
                 'type' => 'vendor-payment',
-                'icon' => '💳',
+                'icon' => 'credit-card',
                 'title' => 'Pembayaran Vendor',
                 'user' => $vendorPayment->user->name ?? '-',
                     'user_email' => $vendorPayment->user->email ?? '-',
@@ -344,7 +356,7 @@ class DashboardController extends Controller
                 $activities->push([
                     'id' => $leave->id,
                 'type' => 'leave',
-                'icon' => '🏝️',
+                'icon' => 'calendar',
                     'title' => 'Cuti & Izin',
                 'user' => $leave->user->name ?? '-',
                     'user_email' => $leave->user->email ?? '-',

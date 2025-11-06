@@ -6,17 +6,16 @@
 
 @section('content')
 @php
-    use App\Constants\ProjectAccessType;
     $managersData = $project->managers->map(fn($m) => [
         'id' => $m->id, 
         'name' => $m->name,
-        'access_type' => $m->pivot->access_type ?? ProjectAccessType::PM
+        'access_type' => $m->pivot->access_type ?? \App\Constants\ProjectAccessType::PM
     ])->toArray();
     // Don't pre-populate availableUsersData - always load fresh via AJAX to avoid cache issues
     $availableUsersData = [];
 @endphp
 <div class="py-8" 
-     x-data="projectManagement({{ $project->id }}, {{ $isAdmin ? 'true' : 'false' }}, @js($managersData), @js($availableUsersData), '{{ $accessType ?? ProjectAccessType::FULL }}')">
+     x-data="projectManagement({{ $project->id }}, {{ $isAdmin ? 'true' : 'false' }}, @js($managersData), @js($availableUsersData), '{{ $accessType ?? \App\Constants\ProjectAccessType::FULL }}')">
     <!-- Preview Modals Container -->
     <div x-data="workPlanPreview()" 
          @open-work-plan-preview.window="previewData = $event.detail; showPreviewModal = true"
@@ -76,11 +75,11 @@
                 <div class="flex flex-wrap gap-2">
                     @foreach($project->managers as $manager)
                     @php
-                        $accessType = $manager->pivot->access_type ?? ProjectAccessType::PM;
+                        $accessType = $manager->pivot->access_type ?? \App\Constants\ProjectAccessType::PM;
                         $badgeColors = [
-                            ProjectAccessType::PM => 'bg-blue-50 text-blue-700',
-                            ProjectAccessType::FINANCE => 'bg-green-50 text-green-700',
-                            ProjectAccessType::FULL => 'bg-purple-50 text-purple-700'
+                            \App\Constants\ProjectAccessType::PM => 'bg-blue-50 text-blue-700',
+                            \App\Constants\ProjectAccessType::FINANCE => 'bg-green-50 text-green-700',
+                            \App\Constants\ProjectAccessType::FULL => 'bg-purple-50 text-purple-700'
                         ];
                         $badgeColor = $badgeColors[$accessType] ?? 'bg-blue-50 text-blue-700';
                         $accessTypeLabel = $accessTypeLabels[$accessType] ?? 'Project Manager';
@@ -442,12 +441,12 @@
                                     <div class="flex flex-wrap gap-2">
                                         @foreach($project->managers as $manager)
                                         @php
-                                            $accessType = $manager->pivot->access_type ?? ProjectAccessType::PM;
+                                            $accessType = $manager->pivot->access_type ?? \App\Constants\ProjectAccessType::PM;
                                             $accessTypeLabel = $accessTypeLabels[$accessType] ?? 'Project Manager';
                                             $badgeColors = [
-                                                ProjectAccessType::PM => 'bg-blue-50 text-blue-700',
-                                                ProjectAccessType::FINANCE => 'bg-green-50 text-green-700',
-                                                ProjectAccessType::FULL => 'bg-purple-50 text-purple-700'
+                                                \App\Constants\ProjectAccessType::PM => 'bg-blue-50 text-blue-700',
+                                                \App\Constants\ProjectAccessType::FINANCE => 'bg-green-50 text-green-700',
+                                                \App\Constants\ProjectAccessType::FULL => 'bg-purple-50 text-purple-700'
                                             ];
                                             $badgeColor = $badgeColors[$accessType] ?? 'bg-blue-50 text-blue-700';
                                         @endphp

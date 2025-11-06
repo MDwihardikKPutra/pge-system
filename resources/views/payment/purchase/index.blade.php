@@ -10,88 +10,90 @@
     $routePrefix = $isAdmin ? 'admin' : 'user';
     $purchaseRoute = $routePrefix . '.purchases';
 @endphp
-<div class="py-8" x-data="purchaseForm">
-    <div class="flex flex-wrap items-center justify-between mb-6 gap-4">
-        <div>
-            <h1 class="text-xl font-bold text-gray-900">Pembelian Saya</h1>
-            <p class="text-xs text-gray-500 mt-1">Kelola pengajuan pembelian barang/jasa Anda</p>
-        </div>
-        <button @click="openCreateModal()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors text-white transition-colors shadow-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            Ajukan Pembelian Baru
-        </button>
-    </div>
-
-    <!-- Status Filter -->
-    <div class="mb-4 flex gap-2">
-        <a href="{{ route($purchaseRoute . '.index', ['status' => 'all']) }}" 
-           class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {{ request('status', 'all') === 'all' ? 'text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}" @if(request('status', 'all') === 'all') style="background-color: #0a1628;" @endif>
-            Semua
-        </a>
-        <a href="{{ route($purchaseRoute . '.index', ['status' => 'pending']) }}" 
-           class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {{ request('status') === 'pending' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-            Pending
-        </a>
-        <a href="{{ route($purchaseRoute . '.index', ['status' => 'approved']) }}" 
-           class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {{ request('status') === 'approved' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-            Disetujui
-        </a>
-        <a href="{{ route($purchaseRoute . '.index', ['status' => 'rejected']) }}" 
-           class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {{ request('status') === 'rejected' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-            Ditolak
-        </a>
-    </div>
-
-    @if($purchases->count() > 0)
-    <div class="bg-white border border-slate-200 rounded-lg shadow-sm">
+<div class="py-4" x-data="purchaseForm">
+    <!-- Table with Integrated Filters (EAR Style) -->
+    <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+        <!-- Header with Filters -->
         <div class="px-6 py-4 border-b border-slate-200" style="background-color: #0a1628;">
-            <h2 class="text-base font-semibold text-white">Daftar Pembelian ({{ $purchases->total() }})</h2>
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-base font-semibold text-white">Pembelian</h2>
+                    <p class="text-xs text-gray-300">Kelola pengajuan pembelian barang/jasa Anda</p>
+                </div>
+                <button @click="openCreateModal()" class="px-3 py-1.5 text-xs font-medium text-white rounded transition-colors bg-blue-600 hover:bg-blue-700">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Ajukan Pembelian Baru
+                </button>
+            </div>
+            
+            <!-- Status Filter -->
+            <div class="flex gap-2">
+                <a href="{{ route($purchaseRoute . '.index', ['status' => 'all']) }}" 
+                   class="px-3 py-1.5 rounded text-xs font-medium transition-colors {{ request('status', 'all') === 'all' ? 'bg-blue-600 text-white' : 'bg-slate-700 text-gray-300 hover:bg-slate-600' }}">
+                    Semua
+                </a>
+                <a href="{{ route($purchaseRoute . '.index', ['status' => 'pending']) }}" 
+                   class="px-3 py-1.5 rounded text-xs font-medium transition-colors {{ request('status') === 'pending' ? 'bg-yellow-500 text-white' : 'bg-slate-700 text-gray-300 hover:bg-slate-600' }}">
+                    Pending
+                </a>
+                <a href="{{ route($purchaseRoute . '.index', ['status' => 'approved']) }}" 
+                   class="px-3 py-1.5 rounded text-xs font-medium transition-colors {{ request('status') === 'approved' ? 'bg-green-500 text-white' : 'bg-slate-700 text-gray-300 hover:bg-slate-600' }}">
+                    Disetujui
+                </a>
+                <a href="{{ route($purchaseRoute . '.index', ['status' => 'rejected']) }}" 
+                   class="px-3 py-1.5 rounded text-xs font-medium transition-colors {{ request('status') === 'rejected' ? 'bg-red-500 text-white' : 'bg-slate-700 text-gray-300 hover:bg-slate-600' }}">
+                    Ditolak
+                </a>
+            </div>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead class="bg-slate-50 border-b border-slate-200">
+
+        <!-- Table Content -->
+        <div class="overflow-x-auto overflow-y-auto" style="max-height: calc(100vh - 200px);">
+            @if($purchases->count() > 0)
+            <table class="min-w-full divide-y divide-slate-200">
+                <thead class="bg-slate-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-slate-700">No. Pembelian</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-slate-700">Item</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-slate-700">Jenis</th>
-                        <th class="px-4 py-3 text-center text-xs font-medium text-slate-700">Qty</th>
-                        <th class="px-4 py-3 text-center text-xs font-medium text-slate-700">Total Harga</th>
-                        <th class="px-4 py-3 text-center text-xs font-medium text-slate-700">Status</th>
-                        <th class="px-4 py-3 text-center text-xs font-medium text-slate-700">Aksi</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">No. Pembelian</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Item</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Jenis</th>
+                        <th class="px-4 py-2.5 text-center text-xs font-medium text-slate-700 uppercase tracking-wider">Qty</th>
+                        <th class="px-4 py-2.5 text-center text-xs font-medium text-slate-700 uppercase tracking-wider">Total Harga</th>
+                        <th class="px-4 py-2.5 text-center text-xs font-medium text-slate-700 uppercase tracking-wider">Status</th>
+                        <th class="px-4 py-2.5 text-center text-xs font-medium text-slate-700 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
+                <tbody class="bg-white divide-y divide-slate-200">
                     @foreach($purchases as $purchase)
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="px-4 py-3 font-mono text-xs text-slate-600">{{ $purchase->purchase_number }}</td>
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-4 py-3 font-mono text-xs text-slate-900">{{ $purchase->purchase_number }}</td>
                         <td class="px-4 py-3">
-                            <div class="text-xs font-semibold text-slate-900">{{ $purchase->item_name }}</div>
+                            <div class="text-xs font-medium text-slate-900">{{ $purchase->item_name }}</div>
                             <div class="text-xs text-slate-500">{{ $purchase->project->name ?? '-' }}</div>
                         </td>
                         <td class="px-4 py-3">
-                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $purchase->type === 'barang' ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700' }}">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $purchase->type === 'barang' ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700' }}">
                                 {{ ucfirst($purchase->type) }}
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-center text-xs text-slate-600">
+                        <td class="px-4 py-3 text-center text-xs text-slate-900">
                             {{ $purchase->quantity }} {{ $purchase->unit }}
                         </td>
-                        <td class="px-4 py-3 text-center">
-                            <span class="text-xs font-semibold text-slate-900">Rp {{ number_format($purchase->total_price, 0, ',', '.') }}</span>
+                        <td class="px-4 py-3 text-center text-xs text-slate-900">
+                            Rp {{ number_format($purchase->total_price, 0, ',', '.') }}
                         </td>
                         <td class="px-4 py-3 text-center">
                             @if($purchase->isPending())
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
+                                <span class="badge-minimal badge-warning">
                                     Pending
                                 </span>
                             @elseif($purchase->isApproved())
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                                <span class="badge-minimal badge-success">
                                     ✓ Disetujui
                                 </span>
                             @else
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                                <span class="badge-minimal badge-error">
                                     ✗ Ditolak
                                 </span>
                             @endif
@@ -123,26 +125,25 @@
                     @endforeach
                 </tbody>
             </table>
-        </div>
-        <div class="px-6 py-4 border-t border-slate-200">
-            {{ $purchases->links() }}
+            @if($purchases->hasPages())
+            <div class="px-6 py-4 border-t border-gray-200">
+                {{ $purchases->links() }}
+            </div>
+            @endif
+            @else
+            <div class="px-6 py-12 text-center">
+                <svg class="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                </svg>
+                <p class="text-sm font-medium text-gray-900 mb-0.5">Belum ada pembelian</p>
+                <p class="text-xs text-gray-500 mb-6">Mulai dengan membuat pengajuan pembelian baru</p>
+                <button @click="openCreateModal()" class="px-3 py-1.5 text-xs font-medium text-white rounded transition-colors bg-blue-600 hover:bg-blue-700">
+                    Ajukan Pembelian Baru
+                </button>
+            </div>
+            @endif
         </div>
     </div>
-    @else
-    <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-12 text-center max-w-xl mx-auto">
-        <svg class="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-        </svg>
-        <div class="mb-2 text-base font-semibold text-slate-600">Belum Ada Pembelian</div>
-        <p class="text-slate-500 mb-6 text-sm">Anda belum mengajukan pembelian. Buat pengajuan pertama Anda untuk memulai.</p>
-        <button @click="openCreateModal()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors shadow-sm mx-auto" style="background-color: #0a1628;" onmouseover="this.style.backgroundColor='#1e293b'" onmouseout="this.style.backgroundColor='#0a1628'">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            Ajukan Pembelian Pertama
-        </button>
-    </div>
-    @endif
 
     <!-- Modal Form -->
     @include('payment.purchase.modal')
@@ -154,8 +155,14 @@
 @push('alpine-init')
 <script>
 // Register Alpine data component - must be executed before Alpine scans DOM
-document.addEventListener('alpine:init', () => {
-    Alpine.data('purchaseForm', () => ({
+(function() {
+    function registerPurchaseForm() {
+        if (typeof Alpine === 'undefined') {
+            console.error('Alpine.js not loaded');
+            return;
+        }
+        
+        Alpine.data('purchaseForm', () => ({
         showModal: false,
         showPreviewModal: false,
         editMode: false,
@@ -252,6 +259,13 @@ document.addEventListener('alpine:init', () => {
         
         async submitForm() {
             this.errors = {};
+            
+            // Sync project_id from vanilla JS project-select to Alpine formData
+            const projectSelectHidden = document.querySelector('.project-select-container .project-select-hidden');
+            if (projectSelectHidden && projectSelectHidden.value) {
+                this.formData.project_id = projectSelectHidden.value;
+            }
+            
             const routePrefix = '{{ $isAdmin ? "admin" : "user" }}';
             const url = this.editMode 
                 ? `/${routePrefix}/purchases/${this.formData.id}`
@@ -263,7 +277,7 @@ document.addEventListener('alpine:init', () => {
                 
                 // Append basic fields
                 if (this.formData.id) formData.append('id', this.formData.id);
-                formData.append('project_id', this.formData.project_id);
+                formData.append('project_id', this.formData.project_id || '');
                 formData.append('type', this.formData.type);
                 formData.append('category', this.formData.category);
                 formData.append('item_name', this.formData.item_name);
@@ -333,8 +347,37 @@ document.addEventListener('alpine:init', () => {
             this.previewData = null;
         }
     }));
-});
+    }
+    
+    // Multiple strategies to ensure registration
+    // Strategy 1: Register immediately if Alpine is already loaded
+    if (typeof Alpine !== 'undefined' && Alpine.version) {
+        registerPurchaseForm();
+    } else {
+        // Strategy 2: Wait for Alpine to load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(() => {
+                    if (typeof Alpine !== 'undefined') {
+                        registerPurchaseForm();
+                    }
+                }, 100);
+            });
+        } else {
+            setTimeout(() => {
+                if (typeof Alpine !== 'undefined') {
+                    registerPurchaseForm();
+                }
+            }, 100);
+        }
+    }
+    
+    // Strategy 3: Also register on alpine:init event (backup)
+    document.addEventListener('alpine:init', registerPurchaseForm);
+})();
 </script>
+
+@include('payment.purchase.project-select-script')
 @endpush
 @endsection
 

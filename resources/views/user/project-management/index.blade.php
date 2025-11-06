@@ -17,43 +17,45 @@
     </div>
 @endif
 
-<div class="py-8" x-data="{ showCreateModal: false }">
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <h1 class="text-xl font-bold text-slate-900">Project Management</h1>
-            <p class="text-sm text-slate-600 mt-1">Kelola dan pantau semua project</p>
-        </div>
-        @if($isAdmin)
-        <button @click="showCreateModal = true" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors" style="background-color: #0a1628;" onmouseover="this.style.backgroundColor='#1e293b'" onmouseout="this.style.backgroundColor='#0a1628'">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            Tambah Project
-        </button>
-        @endif
-    </div>
-
-    <div class="bg-white border border-slate-200 rounded-lg shadow-sm">
+<div class="py-4" x-data="{ showCreateModal: false }">
+    <!-- Table with Integrated Header (EAR Style) -->
+    <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+        <!-- Header -->
         <div class="px-6 py-4 border-b border-slate-200" style="background-color: #0a1628;">
-            <h2 class="text-base font-semibold text-white">Daftar Project</h2>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-base font-semibold text-white">Project Management</h2>
+                    <p class="text-xs text-gray-300">Monitoring & Tracking Semua Project</p>
+                </div>
+                @if($isAdmin)
+                <button @click="showCreateModal = true" class="px-3 py-1.5 text-xs font-medium text-white rounded transition-colors bg-blue-600 hover:bg-blue-700">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Tambah Project
+                </button>
+                @endif
+            </div>
         </div>
-        @if($projects->count() > 0)
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-slate-50 border-b border-slate-200">
+
+        <!-- Table Content -->
+        <div class="overflow-x-auto overflow-y-auto" style="max-height: calc(100vh - 200px);">
+            @if($projects->count() > 0)
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-slate-700">Project</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-slate-700">Detail Project</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-slate-700">User</th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-slate-700">Status</th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-slate-700">Aksi</th>
+                            <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Project</th>
+                            <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Detail Project</th>
+                            <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">User</th>
+                            <th class="px-4 py-2.5 text-center text-xs font-medium text-slate-700 uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-2.5 text-center text-xs font-medium text-slate-700 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
+                    <tbody class="bg-white divide-y divide-slate-200">
                         @foreach($projects as $project)
-                        <tr class="hover:bg-slate-50 transition-colors">
+                        <tr class="hover:bg-slate-50">
                             <td class="px-4 py-3">
-                                <div class="font-semibold text-slate-900">{{ $project->name }}</div>
+                                <div class="font-semibold text-slate-900 text-xs">{{ $project->name }}</div>
                                 <div class="text-xs text-slate-500 mt-0.5">
                                     <span class="font-mono">{{ $project->code }}</span>
                                 </div>
@@ -89,22 +91,21 @@
                                     <div class="flex flex-wrap gap-1.5">
                                         @foreach($project->managers as $manager)
                                             @php
-                                                use App\Constants\ProjectAccessType;
-                                                $accessType = $manager->pivot->access_type ?? ProjectAccessType::PM;
+                                                $accessType = $manager->pivot->access_type ?? \App\Constants\ProjectAccessType::PM;
                                                 $badgeColors = [
-                                                    ProjectAccessType::PM => 'bg-blue-100 text-blue-700',
-                                                    ProjectAccessType::FINANCE => 'bg-green-100 text-green-700',
-                                                    ProjectAccessType::FULL => 'bg-purple-100 text-purple-700'
+                                                    \App\Constants\ProjectAccessType::PM => 'bg-blue-50 text-blue-700 border-blue-200',
+                                                    \App\Constants\ProjectAccessType::FINANCE => 'bg-green-50 text-green-700 border-green-200',
+                                                    \App\Constants\ProjectAccessType::FULL => 'bg-purple-50 text-purple-700 border-purple-200'
                                                 ];
-                                                $badgeColor = $badgeColors[$accessType] ?? 'bg-blue-100 text-blue-700';
+                                                $badgeColor = $badgeColors[$accessType] ?? 'bg-blue-50 text-blue-700 border-blue-200';
                                                 $accessTypeShortLabels = [
-                                                    ProjectAccessType::PM => 'PM',
-                                                    ProjectAccessType::FINANCE => 'Finance',
-                                                    ProjectAccessType::FULL => 'Full'
+                                                    \App\Constants\ProjectAccessType::PM => 'PM',
+                                                    \App\Constants\ProjectAccessType::FINANCE => 'Finance',
+                                                    \App\Constants\ProjectAccessType::FULL => 'Full'
                                                 ];
                                                 $accessTypeLabel = $accessTypeShortLabels[$accessType] ?? 'PM';
                                             @endphp
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium {{ $badgeColor }}" title="{{ $manager->name }} - {{ $accessTypeLabel }}">
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border {{ $badgeColor }}" title="{{ $manager->name }} - {{ $accessTypeLabel }}">
                                                 <span class="font-semibold">{{ $manager->name }}</span>
                                                 <span class="text-xs opacity-75">({{ $accessTypeLabel }})</span>
                                             </span>
@@ -134,33 +135,37 @@
                 </table>
             </div>
             @if($projects->hasPages())
-                <div class="px-6 py-4 border-t border-slate-200 bg-slate-50">
+                <div class="px-6 py-4 border-t border-gray-200">
                     {{ $projects->links() }}
                 </div>
             @endif
-        @else
+            @else
             @if($isAdmin)
-            <div class="py-12 text-center text-slate-500">
-                <svg class="w-16 h-16 mx-auto text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+            <div class="px-6 py-12 text-center">
+                <svg class="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
                 </svg>
-                <p class="text-sm font-medium">Belum ada project</p>
-                <p class="text-xs text-slate-400 mt-1">Project akan muncul di sini setelah ditambahkan</p>
+                <p class="text-sm font-medium text-gray-900 mb-0.5">Belum ada project</p>
+                <p class="text-xs text-gray-500 mb-6">Project akan muncul di sini setelah ditambahkan</p>
+                <button @click="showCreateModal = true" class="px-3 py-1.5 text-xs font-medium text-white rounded transition-colors bg-blue-600 hover:bg-blue-700">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Tambah Project
+                </button>
             </div>
             @else
-            <div class="py-12">
-                <div class="max-w-md mx-auto text-center">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style="background-color: #dbeafe;">
-                        <svg class="w-8 h-8" style="color: #0a1628;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                    </div>
-                    <h3 class="mt-2 text-base font-semibold" style="color: #0a1628;">Belum Ada Project yang Dikelola</h3>
-                    <p class="mt-2 text-sm text-slate-600">
+            <div class="px-6 py-12 text-center">
+                <div class="max-w-md mx-auto">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <p class="text-sm font-medium text-gray-900 mb-0.5">Belum Ada Project yang Dikelola</p>
+                    <p class="text-xs text-gray-500 mb-4">
                         Anda belum ditugaskan sebagai Project Manager untuk project apapun.
                     </p>
                     <div class="mt-4 p-4 rounded-lg bg-blue-50 border border-blue-200 text-left">
-                        <p class="text-sm text-slate-700">
+                        <p class="text-xs text-slate-700">
                             <strong class="font-semibold">Untuk melihat project:</strong><br>
                             Admin perlu menugaskan Anda sebagai Project Manager di project tertentu terlebih dahulu melalui halaman detail project.
                         </p>
@@ -168,7 +173,8 @@
                 </div>
             </div>
             @endif
-        @endif
+            @endif
+        </div>
     </div>
 
     @if($isAdmin)

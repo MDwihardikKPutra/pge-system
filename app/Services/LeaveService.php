@@ -94,11 +94,6 @@ class LeaveService
         }
 
         $leaveRequest->update($updateData);
-
-        // Deduct leave quota if approved
-        if ($status === ApprovalStatus::APPROVED) {
-            $this->deductLeaveQuota($leaveRequest);
-        }
         
         // Send notification to user who submitted
         $leaveRequest->refresh()->load('user');
@@ -114,34 +109,6 @@ class LeaveService
         }
 
         return $leaveRequest;
-    }
-
-    /**
-     * Deduct leave quota from user
-     */
-    protected function deductLeaveQuota(LeaveRequest $leaveRequest): void
-    {
-        $user = $leaveRequest->user;
-        $leaveType = $leaveRequest->leaveType;
-
-        // Only deduct for leave types that require quota (Annual Leave, etc)
-        if ($leaveType && in_array($leaveType->name, ['Annual Leave', 'Cuti Tahunan'])) {
-            $user->decrement('remaining_leave', $leaveRequest->total_days);
-        }
-    }
-
-    /**
-     * Check if user has sufficient leave quota
-     */
-    public function hasSufficientQuota(User $user, int $requestedDays, string $leaveTypeName): bool
-    {
-        // Check only for annual leave
-        if (in_array($leaveTypeName, ['Annual Leave', 'Cuti Tahunan'])) {
-            return $user->remaining_leave >= $requestedDays;
-        }
-
-        // Other leave types don't need quota check
-        return true;
     }
 
     /**
@@ -162,14 +129,15 @@ class LeaveService
      */
     public function getUserLeaveStats(int $userId): array
     {
-        $user = User::find($userId);
-        
         return [
-            'annual_quota' => $user->annual_leave_quota,
-            'remaining' => $user->remaining_leave,
-            'used' => $user->annual_leave_quota - $user->remaining_leave,
             'pending_requests' => LeaveRequest::where('user_id', $userId)
                 ->where('status', ApprovalStatus::PENDING)
+                ->count(),
+            'approved_requests' => LeaveRequest::where('user_id', $userId)
+                ->where('status', ApprovalStatus::APPROVED)
+                ->count(),
+            'rejected_requests' => LeaveRequest::where('user_id', $userId)
+                ->where('status', ApprovalStatus::REJECTED)
                 ->count(),
         ];
     }

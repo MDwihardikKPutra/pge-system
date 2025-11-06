@@ -5,7 +5,7 @@
 @section('page-subtitle', 'Monitoring Rencana & Realisasi Kerja')
 
 @section('content')
-<div class="py-8" 
+<div class="py-4" 
      x-data="{
          activeTab: 'plans',
          showDetailModal: false,

@@ -12,7 +12,7 @@
             <div class="p-6">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <span class="text-2xl">✈️</span>
+                        <x-icon type="paper-airplane" class="w-6 h-6 text-blue-600" />
                     </div>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 mb-2">Surat Perjalanan Dinas (SPD)</h3>
@@ -31,7 +31,7 @@
             <div class="p-6">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <span class="text-2xl">🛒</span>
+                        <x-icon type="shopping-cart" class="w-6 h-6 text-green-600" />
                     </div>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 mb-2">Pembelian</h3>
@@ -50,7 +50,7 @@
             <div class="p-6">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <span class="text-2xl">💳</span>
+                        <x-icon type="credit-card" class="w-6 h-6 text-purple-600" />
                     </div>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 mb-2">Pembayaran Vendor</h3>

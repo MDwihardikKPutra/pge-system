@@ -130,7 +130,7 @@
             </div>
 
             <!-- Create Mode -->
-            <form x-show="modalMode === 'create'" action="{{ route('user.leaves.store') }}" method="POST" enctype="multipart/form-data" class="px-6 py-4" x-data="{ startDate: '', endDate: '', calculateDays() { if (this.startDate && this.endDate) { const start = new Date(this.startDate); const end = new Date(this.endDate); const diffTime = Math.abs(end - start); const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; return diffDays; } return 0; } }">
+            <form x-show="modalMode === 'create'" action="{{ route(isset($routePrefix) ? $routePrefix . '.store' : 'user.leaves.store') }}" method="POST" enctype="multipart/form-data" class="px-6 py-4" x-data="{ startDate: '', endDate: '', calculateDays() { if (this.startDate && this.endDate) { const start = new Date(this.startDate); const end = new Date(this.endDate); const diffTime = Math.abs(end - start); const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; return diffDays; } return 0; } }">
                 @csrf
                 <div class="space-y-4">
                     <div>

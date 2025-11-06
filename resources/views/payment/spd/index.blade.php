@@ -10,82 +10,84 @@
     $routePrefix = $isAdmin ? 'admin' : 'user';
     $spdRoute = $routePrefix . '.spd';
 @endphp
-<div class="py-8" x-data="spdForm">
-    <div class="flex flex-wrap items-center justify-between mb-6 gap-4">
-        <div>
-            <h1 class="text-xl font-bold text-gray-900">SPD Saya</h1>
-            <p class="text-xs text-gray-500 mt-1">Kelola pengajuan surat perjalanan dinas Anda</p>
-        </div>
-        <button @click="openCreateModal()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors shadow-sm" style="background-color: #0a1628;" onmouseover="this.style.backgroundColor='#1e293b'" onmouseout="this.style.backgroundColor='#0a1628'">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            Ajukan SPD Baru
-        </button>
-    </div>
-
-    <!-- Status Filter -->
-    <div class="mb-4 flex gap-2">
-        <a href="{{ route($spdRoute . '.index', ['status' => 'all']) }}" 
-           class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {{ request('status', 'all') === 'all' ? 'text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}" @if(request('status', 'all') === 'all') style="background-color: #0a1628;" @endif>
-            Semua
-        </a>
-        <a href="{{ route($spdRoute . '.index', ['status' => 'pending']) }}" 
-           class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {{ request('status') === 'pending' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-            Pending
-        </a>
-        <a href="{{ route($spdRoute . '.index', ['status' => 'approved']) }}" 
-           class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {{ request('status') === 'approved' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-            Disetujui
-        </a>
-        <a href="{{ route($spdRoute . '.index', ['status' => 'rejected']) }}" 
-           class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {{ request('status') === 'rejected' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-            Ditolak
-        </a>
-    </div>
-
-    @if($spds->count() > 0)
-    <div class="bg-white border border-slate-200 rounded-lg shadow-sm">
+<div class="py-4" x-data="spdForm">
+    <!-- Table with Integrated Filters (EAR Style) -->
+    <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+        <!-- Header with Filters -->
         <div class="px-6 py-4 border-b border-slate-200" style="background-color: #0a1628;">
-            <h2 class="text-base font-semibold text-white">Daftar SPD ({{ $spds->total() }})</h2>
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-base font-semibold text-white">SPD</h2>
+                    <p class="text-xs text-gray-300">Kelola pengajuan surat perjalanan dinas Anda</p>
+                </div>
+                <button @click="openCreateModal()" class="px-3 py-1.5 text-xs font-medium text-white rounded transition-colors bg-blue-600 hover:bg-blue-700">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Ajukan SPD Baru
+                </button>
+            </div>
+            
+            <!-- Status Filter -->
+            <div class="flex gap-2">
+                <a href="{{ route($spdRoute . '.index', ['status' => 'all']) }}" 
+                   class="px-3 py-1.5 rounded text-xs font-medium transition-colors {{ request('status', 'all') === 'all' ? 'bg-blue-600 text-white' : 'bg-slate-700 text-gray-300 hover:bg-slate-600' }}">
+                    Semua
+                </a>
+                <a href="{{ route($spdRoute . '.index', ['status' => 'pending']) }}" 
+                   class="px-3 py-1.5 rounded text-xs font-medium transition-colors {{ request('status') === 'pending' ? 'bg-yellow-500 text-white' : 'bg-slate-700 text-gray-300 hover:bg-slate-600' }}">
+                    Pending
+                </a>
+                <a href="{{ route($spdRoute . '.index', ['status' => 'approved']) }}" 
+                   class="px-3 py-1.5 rounded text-xs font-medium transition-colors {{ request('status') === 'approved' ? 'bg-green-500 text-white' : 'bg-slate-700 text-gray-300 hover:bg-slate-600' }}">
+                    Disetujui
+                </a>
+                <a href="{{ route($spdRoute . '.index', ['status' => 'rejected']) }}" 
+                   class="px-3 py-1.5 rounded text-xs font-medium transition-colors {{ request('status') === 'rejected' ? 'bg-red-500 text-white' : 'bg-slate-700 text-gray-300 hover:bg-slate-600' }}">
+                    Ditolak
+                </a>
+            </div>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead class="bg-slate-50 border-b border-slate-200">
+
+        <!-- Table Content -->
+        <div class="overflow-x-auto overflow-y-auto" style="max-height: calc(100vh - 200px);">
+            @if($spds->count() > 0)
+            <table class="min-w-full divide-y divide-slate-200">
+                <thead class="bg-slate-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-slate-700">No. SPD</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-slate-700">Tujuan</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-slate-700">Tanggal</th>
-                        <th class="px-4 py-3 text-center text-xs font-medium text-slate-700">Total Biaya</th>
-                        <th class="px-4 py-3 text-center text-xs font-medium text-slate-700">Status</th>
-                        <th class="px-4 py-3 text-center text-xs font-medium text-slate-700">Aksi</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">No. SPD</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Tujuan</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Tanggal</th>
+                        <th class="px-4 py-2.5 text-center text-xs font-medium text-slate-700 uppercase tracking-wider">Total Biaya</th>
+                        <th class="px-4 py-2.5 text-center text-xs font-medium text-slate-700 uppercase tracking-wider">Status</th>
+                        <th class="px-4 py-2.5 text-center text-xs font-medium text-slate-700 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
+                <tbody class="bg-white divide-y divide-slate-200">
                     @foreach($spds as $spd)
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="px-4 py-3 font-mono text-xs text-slate-600">{{ $spd->spd_number }}</td>
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-4 py-3 font-mono text-xs text-slate-900">{{ $spd->spd_number }}</td>
                         <td class="px-4 py-3">
-                            <div class="text-xs font-semibold text-slate-900">{{ $spd->destination }}</div>
+                            <div class="text-xs font-medium text-slate-900">{{ $spd->destination }}</div>
                             <div class="text-xs text-slate-500">{{ $spd->project->name ?? '-' }}</div>
                         </td>
-                        <td class="px-4 py-3 text-xs text-slate-600">
+                        <td class="px-4 py-3 text-xs text-slate-900">
                             {{ $spd->departure_date->format('d M Y') }} - {{ $spd->return_date->format('d M Y') }}
                         </td>
-                        <td class="px-4 py-3 text-center">
-                            <span class="text-xs font-semibold text-slate-900">Rp {{ number_format($spd->total_cost, 0, ',', '.') }}</span>
+                        <td class="px-4 py-3 text-center text-xs text-slate-900">
+                            Rp {{ number_format($spd->total_cost, 0, ',', '.') }}
                         </td>
                         <td class="px-4 py-3 text-center">
                             @if($spd->isPending())
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
+                                <span class="badge-minimal badge-warning">
                                     Pending
                                 </span>
                             @elseif($spd->isApproved())
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                                <span class="badge-minimal badge-success">
                                     ✓ Disetujui
                                 </span>
                             @else
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                                <span class="badge-minimal badge-error">
                                     ✗ Ditolak
                                 </span>
                             @endif
@@ -117,26 +119,28 @@
                     @endforeach
                 </tbody>
             </table>
-        </div>
-        <div class="px-6 py-4 border-t border-slate-200">
-            {{ $spds->links() }}
+            @if($spds->hasPages())
+            <div class="px-6 py-4 border-t border-gray-200">
+                {{ $spds->links() }}
+            </div>
+            @endif
+            @else
+            <div class="px-6 py-12 text-center">
+                <svg class="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <p class="text-sm font-medium text-gray-900 mb-0.5">Belum ada SPD</p>
+                <p class="text-xs text-gray-500 mb-6">Mulai dengan membuat pengajuan SPD baru</p>
+                <button @click="openCreateModal()" class="px-3 py-1.5 text-xs font-medium text-white rounded transition-colors bg-blue-600 hover:bg-blue-700">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Ajukan SPD Baru
+                </button>
+            </div>
+            @endif
         </div>
     </div>
-    @else
-    <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-12 text-center max-w-xl mx-auto">
-        <svg class="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-        <div class="mb-2 text-base font-semibold text-slate-600">Belum Ada SPD</div>
-        <p class="text-slate-500 mb-6 text-sm">Anda belum mengajukan SPD. Buat pengajuan pertama Anda untuk memulai.</p>
-        <button @click="openCreateModal()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors bg-primary-blue hover:bg-primary-blue shadow-sm mx-auto">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            Ajukan SPD Pertama
-        </button>
-    </div>
-    @endif
 
     <!-- Modal Form -->
     @include('payment.spd.modal')
@@ -148,8 +152,14 @@
 @push('alpine-init')
 <script>
 // Register Alpine data component - must be defined before Alpine scans DOM
-document.addEventListener('alpine:init', () => {
-    Alpine.data('spdForm', () => ({
+(function() {
+    function registerSpdForm() {
+        if (typeof Alpine === 'undefined') {
+            console.error('Alpine.js not loaded');
+            return;
+        }
+        
+        Alpine.data('spdForm', () => ({
         showModal: false,
         showPreviewModal: false,
         editMode: false,
@@ -277,6 +287,13 @@ document.addEventListener('alpine:init', () => {
         
         async submitForm() {
             this.errors = {};
+            
+            // Sync project_id from vanilla JS project-select to Alpine formData
+            const projectSelectHidden = document.querySelector('.project-select-container .project-select-hidden');
+            if (projectSelectHidden && projectSelectHidden.value) {
+                this.formData.project_id = projectSelectHidden.value;
+            }
+            
             const routePrefix = '{{ $isAdmin ? "admin" : "user" }}';
             const url = this.editMode 
                 ? `/${routePrefix}/spd/${this.formData.id}`
@@ -372,8 +389,37 @@ document.addEventListener('alpine:init', () => {
             this.previewData = null;
         }
     }));
-});
+    }
+    
+    // Multiple strategies to ensure registration
+    // Strategy 1: Register immediately if Alpine is already loaded
+    if (typeof Alpine !== 'undefined' && Alpine.version) {
+        registerSpdForm();
+    } else {
+        // Strategy 2: Wait for Alpine to load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(() => {
+                    if (typeof Alpine !== 'undefined') {
+                        registerSpdForm();
+                    }
+                }, 100);
+            });
+        } else {
+            setTimeout(() => {
+                if (typeof Alpine !== 'undefined') {
+                    registerSpdForm();
+                }
+            }, 100);
+        }
+    }
+    
+    // Strategy 3: Also register on alpine:init event (backup)
+    document.addEventListener('alpine:init', registerSpdForm);
+})();
 </script>
+
+@include('payment.spd.project-select-script')
 @endpush
 @endsection
 

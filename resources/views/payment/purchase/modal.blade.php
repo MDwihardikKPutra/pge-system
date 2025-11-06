@@ -1,4 +1,4 @@
-<div x-show="showModal" x-cloak style="display: none;" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+<div x-show="showModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <!-- Background overlay -->
         <div x-show="showModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeModal()"></div>
@@ -27,38 +27,14 @@
                                 <!-- Project -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Project <span class="text-red-500">*</span></label>
-                                    <div x-data="projectSearchableSelect(null, formData.project_id || null)" 
-                                    x-init="
-                                        let isInitialized = false;
-                                        $watch('selectedId', value => {
-                                            if (isInitialized && formData.project_id !== value) {
-                                                formData.project_id = value;
-                                            }
-                                        });
-                                        $watch('formData.project_id', value => {
-                                            if (!isInitialized) {
-                                                isInitialized = true;
-                                                return;
-                                            }
-                                            if (value && selectedId !== value) {
-                                                fetchProjectById(value);
-                                            } else if (!value && selectedId) {
-                                                clearSelection();
-                                            }
-                                        });
-                                    "
-                                    class="relative">
-                                        <input type="hidden" :value="selectedId" required>
+                                    <div class="project-select-container relative" data-parent-form="purchaseForm">
+                                        <input type="hidden" name="project_id" class="project-select-hidden" required>
                                         
                                         <div class="relative">
                                             <input 
                                                 type="text"
-                                                x-model="searchQuery"
-                                                @input="searchProjects()"
-                                                @focus="showDropdown = true"
-                                                @blur="setTimeout(() => showDropdown = false, 200)"
+                                                class="project-select-input w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 pr-10 text-sm"
                                                 placeholder="Cari atau pilih project..."
-                                                class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 pr-10 text-sm"
                                                 autocomplete="off"
                                                 required
                                             >
@@ -70,43 +46,20 @@
                                         </div>
 
                                         <!-- Dropdown Results -->
-                                        <div x-show="showDropdown && (searching || projects.length > 0)" 
-                                             x-cloak
-                                             x-transition
-                                             class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
-                                            <div x-show="searching" class="p-3 text-center text-sm text-gray-500">
+                                        <div class="project-select-dropdown absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto hidden">
+                                            <div class="project-select-loading p-3 text-center text-sm text-gray-500 hidden">
                                                 Mencari...
                                             </div>
-                                            <template x-if="!searching && projects.length === 0 && searchQuery.length > 0">
-                                                <div class="p-3 text-center text-sm text-gray-500">
-                                                    Tidak ada project ditemukan
-                                                </div>
-                                            </template>
-                                            <template x-if="!searching && projects.length > 0">
-                                                <ul class="py-1">
-                                                    <template x-for="project in projects" :key="project.id">
-                                                        <li>
-                                                            <button 
-                                                                type="button"
-                                                                @click="selectProject(project)"
-                                                                class="w-full text-left px-4 py-2 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors"
-                                                                :class="{ 'bg-blue-50': selectedId == project.id }"
-                                                            >
-                                                                <div class="font-medium text-gray-900" x-text="project.name"></div>
-                                                                <div class="text-xs text-gray-500" x-text="project.code"></div>
-                                                            </button>
-                                                        </li>
-                                                    </template>
-                                                </ul>
-                                            </template>
+                                            <div class="project-select-empty p-3 text-center text-sm text-gray-500 hidden">
+                                                Tidak ada project ditemukan
+                                            </div>
+                                            <ul class="project-select-list py-1 hidden"></ul>
                                         </div>
 
                                         <!-- Clear Button -->
                                         <button 
                                             type="button"
-                                            x-show="selectedId"
-                                            @click="clearSelection()"
-                                            class="absolute right-8 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                            class="project-select-clear absolute right-8 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden"
                                         >
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -159,7 +112,7 @@
                                 <!-- Quantity -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Jumlah <span class="text-red-500">*</span></label>
-                                    <input type="number" x-model="formData.quantity" min="1" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="1" @input="calculateTotal()">
+                                    <input type="number" x-model="formData.quantity" min="1" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="1" @input="updateTotalPrice()">
                                     <span x-show="errors.quantity" class="text-xs text-red-600" x-text="errors.quantity?.[0]"></span>
                                 </div>
 
@@ -182,7 +135,7 @@
                                 <!-- Unit Price -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Satuan (Rp) <span class="text-red-500">*</span></label>
-                                    <input type="number" x-model="formData.unit_price" min="0" step="1000" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="0" @input="calculateTotal()">
+                                    <input type="number" x-model="formData.unit_price" min="0" step="1000" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="0" @input="updateTotalPrice()">
                                     <span x-show="errors.unit_price" class="text-xs text-red-600" x-text="errors.unit_price?.[0]"></span>
                                 </div>
                             </div>
