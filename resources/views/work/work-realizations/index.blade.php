@@ -113,10 +113,17 @@
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap text-right text-xs font-medium">
                             <div class="flex items-center justify-end gap-2">
-                                <button @click="openPreviewModal({{ $realization->id }})" class="text-blue-600 hover:text-blue-900">
-                                    Preview
-                                </button>
-                                @if($realization->user_id === auth()->id())
+                                @php
+                                    $canView = auth()->user()->can('view', $realization);
+                                    $canUpdate = auth()->user()->can('update', $realization);
+                                    $canDelete = auth()->user()->can('delete', $realization);
+                                @endphp
+                                @if($canView)
+                                    <button @click="openPreviewModal({{ $realization->id }})" class="text-blue-600 hover:text-blue-900">
+                                        Preview
+                                    </button>
+                                @endif
+                                @if($canUpdate)
                                     <button @click="openWorkRealizationModal('edit', {
                                         id: {{ $realization->id }},
                                         realization_number: '{{ $realization->realization_number }}',
@@ -133,6 +140,8 @@
                                     })" class="text-indigo-600 hover:text-indigo-900">
                                         Edit
                                     </button>
+                                @endif
+                                @if($canDelete)
                                     <form action="{{ route('user.work-realizations.destroy', $realization) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus?')">
                                         @csrf
                                         @method('DELETE')

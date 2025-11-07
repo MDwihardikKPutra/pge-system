@@ -109,22 +109,39 @@
             </td>
             <td class="px-4 py-3 text-center">
               <div class="flex items-center justify-center gap-2">
-                <button @click="window.dispatchEvent(new CustomEvent('open-preview-modal', { detail: { leaveId: {{ $leave->id }} } }))" class="text-blue-600 hover:text-blue-800 text-xs font-medium transition-colors">
-                  Preview
-                </button>
-                @if($leave->isPending())
-                <button @click="openLeaveModal('edit', {
-                  id: {{ $leave->id }},
-                  leave_number: '{{ $leave->leave_number }}',
-                  leave_type_id: {{ $leave->leave_type_id }},
-                  start_date: '{{ $leave->start_date->format('Y-m-d') }}',
-                  end_date: '{{ $leave->end_date->format('Y-m-d') }}',
-                  total_days: {{ $leave->total_days }},
-                  reason: {{ json_encode($leave->reason) }},
-                  routePrefix: '{{ $routePrefix }}'
-                })" class="text-blue-600 hover:text-blue-800 text-xs font-medium transition-colors">
-                  Edit
-                </button>
+                @php
+                    $canView = auth()->user()->can('view', $leave);
+                    $canUpdate = auth()->user()->can('update', $leave);
+                    $canDelete = auth()->user()->can('delete', $leave);
+                @endphp
+                @if($canView)
+                    <button @click="window.dispatchEvent(new CustomEvent('open-preview-modal', { detail: { leaveId: {{ $leave->id }} } }))" class="text-blue-600 hover:text-blue-800 text-xs font-medium transition-colors">
+                      Preview
+                    </button>
+                @endif
+                @if($canUpdate && $leave->isPending())
+                    <button @click="openLeaveModal('edit', {
+                      id: {{ $leave->id }},
+                      leave_number: '{{ $leave->leave_number }}',
+                      leave_type_id: {{ $leave->leave_type_id }},
+                      start_date: '{{ $leave->start_date->format('Y-m-d') }}',
+                      end_date: '{{ $leave->end_date->format('Y-m-d') }}',
+                      total_days: {{ $leave->total_days }},
+                      reason: {{ json_encode($leave->reason) }},
+                      routePrefix: '{{ $routePrefix }}'
+                    })" class="text-blue-600 hover:text-blue-800 text-xs font-medium transition-colors">
+                      Edit
+                    </button>
+                @endif
+                @if($canDelete && $leave->isPending())
+                    <form action="{{ route($routePrefix . '.leaves.destroy', $leave) }}" method="POST" class="inline" 
+                          onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengajuan cuti ini?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="text-red-600 hover:text-red-800 text-xs font-medium transition-colors">
+                            Hapus
+                        </button>
+                    </form>
                 @endif
               </div>
             </td>

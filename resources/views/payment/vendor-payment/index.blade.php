@@ -101,24 +101,33 @@
                         </td>
                         <td class="px-4 py-3 text-center">
                             <div class="flex items-center justify-center gap-2">
-                                <button @click="openPreviewModal({{ $vp->id }})" 
-                                        class="text-blue-600 hover:text-blue-800 text-xs font-medium transition-colors">
-                                    Preview
-                                </button>
-                                <button @click="openEditModal({{ $vp->id }})" 
-                                        class="text-blue-600 hover:text-blue-800 text-xs font-medium transition-colors"
-                                        @if(!$vp->isPending()) disabled @endif>
-                                    Edit
-                                </button>
-                                @if($vp->isPending())
-                                <form action="{{ route($vpRoute . '.destroy', $vp) }}" method="POST" class="inline" 
-                                      onsubmit="return confirm('Apakah Anda yakin ingin menghapus pembayaran vendor ini?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-800 text-xs font-medium transition-colors">
-                                        Hapus
+                                @php
+                                    $canView = auth()->user()->can('view', $vp);
+                                    $canUpdate = auth()->user()->can('update', $vp);
+                                    $canDelete = auth()->user()->can('delete', $vp);
+                                @endphp
+                                @if($canView)
+                                    <button @click="openPreviewModal({{ $vp->id }})" 
+                                            class="text-blue-600 hover:text-blue-800 text-xs font-medium transition-colors">
+                                        Preview
                                     </button>
-                                </form>
+                                @endif
+                                @if($canUpdate)
+                                    <button @click="openEditModal({{ $vp->id }})" 
+                                            class="text-blue-600 hover:text-blue-800 text-xs font-medium transition-colors"
+                                            @if(!$vp->isPending()) disabled @endif>
+                                        Edit
+                                    </button>
+                                @endif
+                                @if($canDelete && $vp->isPending())
+                                    <form action="{{ route($vpRoute . '.destroy', $vp) }}" method="POST" class="inline" 
+                                          onsubmit="return confirm('Apakah Anda yakin ingin menghapus pembayaran vendor ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-800 text-xs font-medium transition-colors">
+                                            Hapus
+                                        </button>
+                                    </form>
                                 @endif
                             </div>
                         </td>

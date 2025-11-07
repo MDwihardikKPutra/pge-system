@@ -24,44 +24,38 @@
                         <h3 class="text-base font-semibold text-gray-800 mb-3 pb-2 border-b">Informasi Dasar</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">No. Pembelian</label>
-                                <p class="text-sm text-gray-900 font-mono" x-text="previewData?.purchase_number || '-'"></p>
-                            </div>
-                            <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Project</label>
-                                <p class="text-sm text-gray-900" x-text="previewData?.project?.name || '-'"></p>
+                                <p class="text-sm text-gray-900" x-text="previewData?.project?.name ? (previewData.project.name + (previewData.project.code ? ' (' + previewData.project.code + ')' : '')) : '-'"></p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Jenis</label>
-                                <p class="text-sm text-gray-900" x-text="previewData?.type ? (previewData.type === 'barang' ? 'Barang' : 'Jasa') : '-'"></p>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tipe Pembelian</label>
+                                <p class="text-sm text-gray-900" x-text="previewData?.type ? (previewData.type === 'Barang' ? 'Barang' : previewData.type === 'Jasa' ? 'Jasa' : previewData.type === 'Aset' ? 'Aset' : previewData.type) : '-'"></p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                                <p class="text-sm text-gray-900" x-text="previewData?.category ? (previewData.category === 'project' ? 'Project' : previewData.category === 'kantor' ? 'Kantor' : 'Lainnya') : '-'"></p>
+                                <p class="text-sm text-gray-900" x-text="previewData?.category || '-'"></p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Nama Item</label>
                                 <p class="text-sm text-gray-900" x-text="previewData?.item_name || '-'"></p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Kuantitas</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah</label>
                                 <p class="text-sm text-gray-900" x-text="(previewData?.quantity || 0) + ' ' + (previewData?.unit || '')"></p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Harga Satuan</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Harga Satuan (Rp)</label>
                                 <p class="text-sm text-gray-900" x-text="'Rp ' + (previewData?.unit_price || 0).toLocaleString('id-ID')"></p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Total Harga</label>
-                                <p class="text-sm text-gray-900 font-semibold" x-text="'Rp ' + (previewData?.total_price || 0).toLocaleString('id-ID')"></p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Deskripsi -->
-                    <div x-show="previewData?.description">
-                        <h3 class="text-base font-semibold text-gray-800 mb-3 pb-2 border-b">Deskripsi</h3>
-                        <p class="text-sm text-gray-700 whitespace-pre-wrap" x-text="previewData?.description || '-'"></p>
+                    <!-- Deskripsi / Spesifikasi -->
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-800 mb-3 pb-2 border-b">Deskripsi / Spesifikasi</h3>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-700 whitespace-pre-wrap" x-text="previewData?.description || '-'"></p>
+                        </div>
                     </div>
 
                     <!-- Catatan -->

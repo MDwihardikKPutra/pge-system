@@ -10,11 +10,12 @@ use App\Traits\ChecksAuthorization;
 use App\Constants\WorkTimeLimits;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Carbon\Carbon;
 
 class WorkPlanController extends Controller
 {
-    use ChecksAuthorization;
+    use AuthorizesRequests, ChecksAuthorization;
 
     protected $workService;
 
@@ -35,7 +36,7 @@ class WorkPlanController extends Controller
         // Get project IDs where user has work access (PM or Full)
         $managedProjectIds = $isAdmin ? [] : $user->managedProjectsWithWorkAccess()->pluck('projects.id')->toArray();
         
-        $query = WorkPlan::with(['project', 'user'])
+        $query = WorkPlan::with(['project.managers', 'user'])
             ->when($month, function ($q) use ($month) {
                 $date = Carbon::parse($month . '-01');
                 return $q->whereYear('plan_date', $date->year)
@@ -130,14 +131,26 @@ class WorkPlanController extends Controller
      */
     public function show(WorkPlan $workPlan)
     {
-        $this->authorize('view', $workPlan);
-
+        // Load basic relations first
         $workPlan->load(['user', 'realizations', 'project']);
+        
+        // Load project managers if project exists (needed for policy check)
+        if ($workPlan->project_id && $workPlan->project) {
+            $workPlan->load('project.managers');
+        }
+        
+        $this->authorize('view', $workPlan);
         
         // Return JSON for AJAX requests (preview modal)
         if (request()->wantsJson() || request()->ajax()) {
+            // Ensure work_location is serialized as string value
+            $workPlanData = $workPlan->toArray();
+            if (isset($workPlanData['work_location']) && is_object($workPlan->work_location)) {
+                $workPlanData['work_location'] = $workPlan->work_location->value;
+            }
+            
             return response()->json([
-                'workPlan' => $workPlan,
+                'workPlan' => $workPlanData,
             ]);
         }
         
@@ -149,6 +162,11 @@ class WorkPlanController extends Controller
      */
     public function edit(WorkPlan $workPlan)
     {
+        // Load project managers only if needed for policy check (not owner)
+        if ($workPlan->user_id !== auth()->id() && $workPlan->project_id) {
+            $workPlan->load('project.managers');
+        }
+        
         $this->authorize('update', $workPlan);
 
         $projects = \App\Helpers\CacheHelper::getProjectsDropdown();
@@ -161,6 +179,11 @@ class WorkPlanController extends Controller
      */
     public function update(Request $request, WorkPlan $workPlan)
     {
+        // Load project managers only if needed for policy check (not owner)
+        if ($workPlan->user_id !== auth()->id() && $workPlan->project_id) {
+            $workPlan->load('project.managers');
+        }
+        
         $this->authorize('update', $workPlan);
 
         $validated = $request->validate([
@@ -203,6 +226,11 @@ class WorkPlanController extends Controller
      */
     public function destroy(WorkPlan $workPlan)
     {
+        // Load project managers only if needed for policy check (not owner)
+        if ($workPlan->user_id !== auth()->id() && $workPlan->project_id) {
+            $workPlan->load('project.managers');
+        }
+        
         $this->authorize('delete', $workPlan);
 
         try {

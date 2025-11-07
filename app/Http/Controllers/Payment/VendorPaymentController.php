@@ -57,25 +57,15 @@ class VendorPaymentController extends BaseController
     public function show(VendorPayment $vendorPayment): JsonResponse
     {
         return $this->handleOperation(function () use ($vendorPayment) {
+            // Load project managers if project exists (needed for policy check)
+            if ($vendorPayment->project_id && $vendorPayment->project) {
+                $vendorPayment->load('project.managers');
+            }
+            
+            $this->authorize('view', $vendorPayment);
+            
             // Eager load relationships to avoid N+1 queries
             $vendorPayment->load(['vendor', 'project', 'approvedBy']);
-            
-            $user = auth()->user();
-            $isAdmin = $this->isAdmin();
-            
-            // Check if user is owner
-            $isOwner = $vendorPayment->user_id === $user->id;
-            
-            // Check if user has Finance/Full access to the project
-            $hasProjectAccess = false;
-            if ($vendorPayment->project_id && $vendorPayment->project) {
-                $accessType = $vendorPayment->project->getManagerAccessType($user->id);
-                $hasProjectAccess = in_array($accessType, ['finance', 'full']);
-            }
-            
-            if (!$isAdmin && !$isOwner && !$hasProjectAccess) {
-                abort(403, 'Anda tidak memiliki akses ke pembayaran vendor ini');
-            }
 
             $vpData = $vendorPayment->toArray();
             

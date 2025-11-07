@@ -9,6 +9,32 @@ use App\Enums\ApprovalStatus;
 class SpdPolicy
 {
     /**
+     * Determine if the user can view the SPD.
+     */
+    public function view(User $user, SPD $spd): bool
+    {
+        // Admin can view all
+        if ($user->hasRole('admin')) {
+            return true;
+        }
+
+        // Owner can view their own
+        if ($spd->user_id === $user->id) {
+            return true;
+        }
+
+        // PM with finance/full access can view
+        if ($spd->project_id && $spd->project) {
+            $accessType = $spd->project->getManagerAccessType($user->id);
+            if (in_array($accessType, ['finance', 'full'])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Determine if the user can update the SPD.
      */
     public function update(User $user, SPD $spd): bool

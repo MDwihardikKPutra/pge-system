@@ -5,12 +5,8 @@
                         <h3 class="text-base font-semibold text-gray-800 mb-3 pb-2 border-b">Informasi Dasar</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">No. SPD</label>
-                                <p class="text-sm text-gray-900 font-mono" x-text="previewData?.spd_number || '-'"></p>
-                            </div>
-                            <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Project</label>
-                                <p class="text-sm text-gray-900" x-text="previewData?.project?.name || '-'"></p>
+                                <p class="text-sm text-gray-900" x-text="previewData?.project?.name ? (previewData.project.name + (previewData.project.code ? ' (' + previewData.project.code + ')' : '')) : '-'"></p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Perjalanan</label>

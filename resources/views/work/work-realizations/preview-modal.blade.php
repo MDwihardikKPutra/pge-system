@@ -24,45 +24,53 @@
                         <h3 class="text-base font-semibold text-gray-800 mb-3 pb-2 border-b">Informasi Dasar</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">No. Realisasi</label>
-                                <p class="text-sm text-gray-900 font-mono" x-text="previewData?.realization_number || '-'"></p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
-                                <p class="text-sm text-gray-900" x-text="previewData?.realization_date ? new Date(previewData.realization_date).toLocaleDateString('id-ID') : '-'"></p>
-                            </div>
-                            <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Project</label>
-                                <p class="text-sm text-gray-900" x-text="previewData?.project?.name || '-'"></p>
+                                <p class="text-sm text-gray-900" x-text="previewData?.project?.name ? (previewData.project.name + (previewData.project.code ? ' (' + previewData.project.code + ')' : '')) : '-'"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Realisasi</label>
+                                <p class="text-sm text-gray-900" x-text="previewData?.realization_date ? new Date(previewData.realization_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'"></p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi Kerja</label>
-                                <p class="text-sm text-gray-900" x-text="previewData?.work_location ? (previewData.work_location === 'onsite' ? 'Onsite' : previewData.work_location === 'remote' ? 'Remote' : 'Hybrid') : '-'"></p>
+                                <p class="text-sm text-gray-900">
+                                    <template x-if="previewData?.work_location">
+                                        <span x-text="(() => {
+                                            const loc = previewData.work_location?.value || previewData.work_location;
+                                            if (loc === 'site') return 'Site (Lapangan)';
+                                            if (loc === 'office') return 'Office (Kantor)';
+                                            if (loc === 'wfh') return 'WFH (Work From Home)';
+                                            if (loc === 'wfa') return 'WFA (Work From Anywhere)';
+                                            return loc || '-';
+                                        })()"></span>
+                                    </template>
+                                    <template x-if="!previewData?.work_location">
+                                        <span>-</span>
+                                    </template>
+                                </p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Durasi Aktual</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Durasi Aktual (Jam)</label>
                                 <p class="text-sm text-gray-900" x-text="(previewData?.actual_duration_hours || 0) + ' jam'"></p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Progress</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Progress (%)</label>
                                 <div class="flex items-center gap-2">
                                     <div class="flex-1 w-24 bg-gray-200 rounded-full h-2">
-                                        <div class="h-2 rounded-full" style="width: (previewData?.progress_percentage || 0) + '%'; background-color: #0a1628;" :style="'width: ' + (previewData?.progress_percentage || 0) + '%'"></div>
+                                        <div class="h-2 rounded-full" style="background-color: #0a1628;" :style="'width: ' + (previewData?.progress_percentage || 0) + '%'"></div>
                                     </div>
                                     <span class="text-sm text-gray-900 font-semibold" x-text="(previewData?.progress_percentage || 0) + '%'"></span>
                                 </div>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Judul</label>
-                                <p class="text-sm text-gray-900 font-semibold" x-text="previewData?.title || '-'"></p>
-                            </div>
                         </div>
                     </div>
 
-                    <!-- Deskripsi -->
-                    <div x-show="previewData?.description">
-                        <h3 class="text-base font-semibold text-gray-800 mb-3 pb-2 border-b">Deskripsi</h3>
-                        <p class="text-sm text-gray-700 whitespace-pre-wrap" x-text="previewData?.description || '-'"></p>
+                    <!-- Deskripsi Realisasi -->
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-800 mb-3 pb-2 border-b">Deskripsi Realisasi</h3>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-700 whitespace-pre-wrap" x-text="previewData?.description || '-'"></p>
+                        </div>
                     </div>
                 </div>
             </div>

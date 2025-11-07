@@ -54,25 +54,15 @@ class SpdController extends BaseController
      */
     public function show(SPD $spd): JsonResponse
     {
+        // Load project managers if project exists (needed for policy check)
+        if ($spd->project_id && $spd->project) {
+            $spd->load('project.managers');
+        }
+        
+        $this->authorize('view', $spd);
+        
         // Eager load relationships to avoid N+1 queries
         $spd->load(['project', 'approvedBy']);
-        
-        $user = auth()->user();
-        $isAdmin = $this->isAdmin();
-        
-        // Check if user is owner
-        $isOwner = $spd->user_id === $user->id;
-        
-        // Check if user has Finance/Full access to the project
-        $hasProjectAccess = false;
-        if ($spd->project_id && $spd->project) {
-            $accessType = $spd->project->getManagerAccessType($user->id);
-            $hasProjectAccess = in_array($accessType, ['finance', 'full']);
-        }
-        
-        if (!$isAdmin && !$isOwner && !$hasProjectAccess) {
-            abort(403, 'Anda tidak memiliki akses ke SPD ini');
-        }
 
         $spdData = $spd->toArray();
         

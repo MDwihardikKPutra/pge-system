@@ -24,44 +24,27 @@
                     <div>
                         <h3 class="text-base font-semibold text-gray-800 mb-3 pb-2 border-b">Informasi Dasar</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <template x-if="previewData?.user">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Pengguna</label>
-                                    <p class="text-sm text-gray-900 font-semibold" x-text="previewData?.user?.name || '-'"></p>
-                                    <p class="text-xs text-gray-500" x-text="previewData?.user?.email || ''"></p>
-                                </div>
-                            </template>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">No. Pengajuan</label>
-                                <p class="text-sm text-gray-900 font-mono" x-text="previewData?.leave_number || '-'"></p>
-                            </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Cuti/Izin</label>
                                 <p class="text-sm text-gray-900" x-text="previewData?.leave_type?.name || '-'"></p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
-                                <p class="text-sm text-gray-900" x-text="previewData?.start_date ? new Date(previewData.start_date).toLocaleDateString('id-ID') : '-'"></p>
+                                <p class="text-sm text-gray-900" x-text="previewData?.start_date ? new Date(previewData.start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'"></p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai</label>
-                                <p class="text-sm text-gray-900" x-text="previewData?.end_date ? new Date(previewData.end_date).toLocaleDateString('id-ID') : '-'"></p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Total Hari</label>
-                                <p class="text-sm text-gray-900 font-semibold" x-text="(previewData?.total_days || 0) + ' hari'"></p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pengajuan</label>
-                                <p class="text-sm text-gray-900" x-text="previewData?.created_at ? new Date(previewData.created_at).toLocaleDateString('id-ID') : '-'"></p>
+                                <p class="text-sm text-gray-900" x-text="previewData?.end_date ? new Date(previewData.end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'"></p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Alasan -->
-                    <div x-show="previewData?.reason">
+                    <div>
                         <h3 class="text-base font-semibold text-gray-800 mb-3 pb-2 border-b">Alasan</h3>
-                        <p class="text-sm text-gray-700 whitespace-pre-wrap" x-text="previewData?.reason || '-'"></p>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-700 whitespace-pre-wrap" x-text="previewData?.reason || '-'"></p>
+                        </div>
                     </div>
 
                     <!-- Dokumen Pendukung -->

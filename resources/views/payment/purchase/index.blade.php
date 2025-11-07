@@ -100,24 +100,33 @@
                         </td>
                         <td class="px-4 py-3 text-center">
                             <div class="flex items-center justify-center gap-2">
-                                <button @click="openPreviewModal({{ $purchase->id }})" 
-                                        class="text-blue-600 hover:text-blue-800 text-xs font-medium transition-colors">
-                                    Preview
-                                </button>
-                                <button @click="openEditModal({{ $purchase->id }})" 
-                                        class="text-blue-600 hover:text-blue-800 text-xs font-medium transition-colors"
-                                        @if(!$purchase->isPending()) disabled @endif>
-                                    Edit
-                                </button>
-                                @if($purchase->isPending())
-                                <form action="{{ route($purchaseRoute . '.destroy', $purchase) }}" method="POST" class="inline" 
-                                      onsubmit="return confirm('Apakah Anda yakin ingin menghapus pembelian ini?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-800 text-xs font-medium transition-colors">
-                                        Hapus
+                                @php
+                                    $canView = auth()->user()->can('view', $purchase);
+                                    $canUpdate = auth()->user()->can('update', $purchase);
+                                    $canDelete = auth()->user()->can('delete', $purchase);
+                                @endphp
+                                @if($canView)
+                                    <button @click="openPreviewModal({{ $purchase->id }})" 
+                                            class="text-blue-600 hover:text-blue-800 text-xs font-medium transition-colors">
+                                        Preview
                                     </button>
-                                </form>
+                                @endif
+                                @if($canUpdate)
+                                    <button @click="openEditModal({{ $purchase->id }})" 
+                                            class="text-blue-600 hover:text-blue-800 text-xs font-medium transition-colors"
+                                            @if(!$purchase->isPending()) disabled @endif>
+                                        Edit
+                                    </button>
+                                @endif
+                                @if($canDelete && $purchase->isPending())
+                                    <form action="{{ route($purchaseRoute . '.destroy', $purchase) }}" method="POST" class="inline" 
+                                          onsubmit="return confirm('Apakah Anda yakin ingin menghapus pembelian ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-800 text-xs font-medium transition-colors">
+                                            Hapus
+                                        </button>
+                                    </form>
                                 @endif
                             </div>
                         </td>

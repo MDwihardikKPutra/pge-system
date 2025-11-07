@@ -24,36 +24,44 @@
                         <h3 class="text-base font-semibold text-gray-800 mb-3 pb-2 border-b">Informasi Dasar</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">No. Rencana</label>
-                                <p class="text-sm text-gray-900 font-mono" x-text="previewData?.work_plan_number || '-'"></p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
-                                <p class="text-sm text-gray-900" x-text="previewData?.plan_date ? new Date(previewData.plan_date).toLocaleDateString('id-ID') : '-'"></p>
-                            </div>
-                            <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Project</label>
-                                <p class="text-sm text-gray-900" x-text="previewData?.project?.name || '-'"></p>
+                                <p class="text-sm text-gray-900" x-text="previewData?.project?.name ? (previewData.project.name + (previewData.project.code ? ' (' + previewData.project.code + ')' : '')) : '-'"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Rencana</label>
+                                <p class="text-sm text-gray-900" x-text="previewData?.plan_date ? new Date(previewData.plan_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'"></p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi Kerja</label>
-                                <p class="text-sm text-gray-900" x-text="previewData?.work_location ? (previewData.work_location === 'onsite' ? 'Onsite' : previewData.work_location === 'remote' ? 'Remote' : 'Hybrid') : '-'"></p>
+                                <p class="text-sm text-gray-900">
+                                    <template x-if="previewData?.work_location">
+                                        <span x-text="(() => {
+                                            const loc = previewData.work_location?.value || previewData.work_location;
+                                            if (loc === 'site') return 'Site (Lapangan)';
+                                            if (loc === 'office') return 'Office (Kantor)';
+                                            if (loc === 'wfh') return 'WFH (Work From Home)';
+                                            if (loc === 'wfa') return 'WFA (Work From Anywhere)';
+                                            return loc || '-';
+                                        })()"></span>
+                                    </template>
+                                    <template x-if="!previewData?.work_location">
+                                        <span>-</span>
+                                    </template>
+                                </p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Durasi Rencana</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Durasi Kerja (Jam)</label>
                                 <p class="text-sm text-gray-900" x-text="(previewData?.planned_duration_hours || 0) + ' jam'"></p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Judul</label>
-                                <p class="text-sm text-gray-900 font-semibold" x-text="previewData?.title || '-'"></p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Deskripsi -->
-                    <div x-show="previewData?.description">
-                        <h3 class="text-base font-semibold text-gray-800 mb-3 pb-2 border-b">Deskripsi</h3>
-                        <p class="text-sm text-gray-700 whitespace-pre-wrap" x-text="previewData?.description || '-'"></p>
+                    <!-- Deskripsi Rencana -->
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-800 mb-3 pb-2 border-b">Deskripsi Rencana</h3>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-700 whitespace-pre-wrap" x-text="previewData?.description || '-'"></p>
+                        </div>
                     </div>
                 </div>
             </div>

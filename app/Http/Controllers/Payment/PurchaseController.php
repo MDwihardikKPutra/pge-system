@@ -54,25 +54,15 @@ class PurchaseController extends BaseController
      */
     public function show(Purchase $purchase): JsonResponse
     {
+        // Load project managers if project exists (needed for policy check)
+        if ($purchase->project_id && $purchase->project) {
+            $purchase->load('project.managers');
+        }
+        
+        $this->authorize('view', $purchase);
+        
         // Eager load relationships to avoid N+1 queries
         $purchase->load(['project', 'approvedBy']);
-        
-        $user = auth()->user();
-        $isAdmin = $this->isAdmin();
-        
-        // Check if user is owner
-        $isOwner = $purchase->user_id === $user->id;
-        
-        // Check if user has Finance/Full access to the project
-        $hasProjectAccess = false;
-        if ($purchase->project_id && $purchase->project) {
-            $accessType = $purchase->project->getManagerAccessType($user->id);
-            $hasProjectAccess = in_array($accessType, ['finance', 'full']);
-        }
-        
-        if (!$isAdmin && !$isOwner && !$hasProjectAccess) {
-            abort(403, 'Anda tidak memiliki akses ke pembelian ini');
-        }
 
         $purchaseData = $purchase->toArray();
         

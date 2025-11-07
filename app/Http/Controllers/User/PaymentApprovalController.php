@@ -23,7 +23,18 @@ class PaymentApprovalController extends Controller
     public function __construct(PaymentService $paymentService)
     {
         $this->paymentService = $paymentService;
-        $this->middleware('permission:approve-payment-submission');
+    }
+
+    /**
+     * Check if user has access to payment approval module
+     */
+    protected function checkAccess()
+    {
+        $user = auth()->user();
+        // Admin always has access, or user with payment-approval module access
+        if (!$user->hasRole('admin') && !$user->hasModuleAccess('payment-approval')) {
+            abort(403, 'USER DOES NOT HAVE THE RIGHT PERMISSIONS');
+        }
     }
 
     /**
@@ -31,6 +42,7 @@ class PaymentApprovalController extends Controller
      */
     public function index(Request $request)
     {
+        $this->checkAccess();
         $type = $request->get('type', 'all'); // all, spd, purchase, vendor-payment
         $status = $request->get('status', 'pending'); // pending, approved, rejected, all
 
@@ -77,10 +89,7 @@ class PaymentApprovalController extends Controller
      */
     public function showSpd(SPD $spd)
     {
-        // Check permission
-        if (!auth()->user()->hasModuleAccess('payment-approval') && !auth()->user()->hasRole('admin')) {
-            abort(403, 'USER DOES NOT HAVE THE RIGHT PERMISSIONS');
-        }
+        $this->checkAccess();
         
         // Use admin controller method to avoid duplication
         $adminController = app(\App\Http\Controllers\Admin\PaymentApprovalController::class);
@@ -92,10 +101,7 @@ class PaymentApprovalController extends Controller
      */
     public function showPurchase(Purchase $purchase)
     {
-        // Check permission
-        if (!auth()->user()->hasModuleAccess('payment-approval') && !auth()->user()->hasRole('admin')) {
-            abort(403, 'USER DOES NOT HAVE THE RIGHT PERMISSIONS');
-        }
+        $this->checkAccess();
         
         // Use admin controller method to avoid duplication
         $adminController = app(\App\Http\Controllers\Admin\PaymentApprovalController::class);
@@ -107,10 +113,7 @@ class PaymentApprovalController extends Controller
      */
     public function showVendorPayment(VendorPayment $vendorPayment)
     {
-        // Check permission
-        if (!auth()->user()->hasModuleAccess('payment-approval') && !auth()->user()->hasRole('admin')) {
-            abort(403, 'USER DOES NOT HAVE THE RIGHT PERMISSIONS');
-        }
+        $this->checkAccess();
         
         // Use admin controller method to avoid duplication
         $adminController = app(\App\Http\Controllers\Admin\PaymentApprovalController::class);
@@ -122,6 +125,7 @@ class PaymentApprovalController extends Controller
      */
     public function approveSpd(ApprovePaymentRequest $request, SPD $spd)
     {
+        $this->checkAccess();
         $validated = $request->validated();
 
         try {
@@ -163,6 +167,7 @@ class PaymentApprovalController extends Controller
      */
     public function rejectSpd(ApprovePaymentRequest $request, SPD $spd)
     {
+        $this->checkAccess();
         $validated = $request->validated();
 
         try {
@@ -205,6 +210,7 @@ class PaymentApprovalController extends Controller
      */
     public function approvePurchase(ApprovePaymentRequest $request, Purchase $purchase)
     {
+        $this->checkAccess();
         $validated = $request->validated();
 
         try {
@@ -246,6 +252,7 @@ class PaymentApprovalController extends Controller
      */
     public function rejectPurchase(ApprovePaymentRequest $request, Purchase $purchase)
     {
+        $this->checkAccess();
         $validated = $request->validated();
 
         try {
@@ -288,6 +295,7 @@ class PaymentApprovalController extends Controller
      */
     public function approveVendorPayment(ApprovePaymentRequest $request, VendorPayment $vendorPayment)
     {
+        $this->checkAccess();
         $validated = $request->validated();
 
         try {
@@ -329,6 +337,7 @@ class PaymentApprovalController extends Controller
      */
     public function rejectVendorPayment(ApprovePaymentRequest $request, VendorPayment $vendorPayment)
     {
+        $this->checkAccess();
         $validated = $request->validated();
 
         try {

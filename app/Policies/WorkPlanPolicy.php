@@ -64,8 +64,23 @@ class WorkPlanPolicy
             return true;
         }
 
-        // Only owner can update (PM can view but not edit)
-        return $workPlan->user_id === $user->id;
+        // Owner can update their own
+        if ($workPlan->user_id === $user->id) {
+            return true;
+        }
+
+        // PM with full access can update work plans from managed project
+        if ($workPlan->project_id) {
+            $project = $workPlan->project;
+            if ($project) {
+                $accessType = $project->getManagerAccessType($user->id);
+                if ($accessType === 'full') {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -78,8 +93,23 @@ class WorkPlanPolicy
             return true;
         }
 
-        // Only owner can delete (PM can view but not delete)
-        return $workPlan->user_id === $user->id;
+        // Owner can delete their own
+        if ($workPlan->user_id === $user->id) {
+            return true;
+        }
+
+        // PM with full access can delete work plans from managed project
+        if ($workPlan->project_id) {
+            $project = $workPlan->project;
+            if ($project) {
+                $accessType = $project->getManagerAccessType($user->id);
+                if ($accessType === 'full') {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**

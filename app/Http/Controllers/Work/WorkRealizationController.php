@@ -12,11 +12,12 @@ use App\Constants\WorkTimeLimits;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Carbon\Carbon;
 
 class WorkRealizationController extends Controller
 {
-    use ChecksAuthorization;
+    use AuthorizesRequests, ChecksAuthorization;
 
     protected $workService;
 
@@ -161,14 +162,26 @@ class WorkRealizationController extends Controller
      */
     public function show(WorkRealization $workRealization)
     {
-        $this->authorize('view', $workRealization);
-
+        // Load basic relations first
         $workRealization->load(['user', 'workPlan', 'project']);
+        
+        // Load project managers if project exists (needed for policy check)
+        if ($workRealization->project_id && $workRealization->project) {
+            $workRealization->load('project.managers');
+        }
+        
+        $this->authorize('view', $workRealization);
         
         // Return JSON for AJAX requests (preview modal)
         if (request()->wantsJson() || request()->ajax()) {
+            // Ensure work_location is serialized as string value
+            $workRealizationData = $workRealization->toArray();
+            if (isset($workRealizationData['work_location']) && is_object($workRealization->work_location)) {
+                $workRealizationData['work_location'] = $workRealization->work_location->value;
+            }
+            
             return response()->json([
-                'workRealization' => $workRealization,
+                'workRealization' => $workRealizationData,
             ]);
         }
         
@@ -180,6 +193,11 @@ class WorkRealizationController extends Controller
      */
     public function edit(WorkRealization $workRealization)
     {
+        // Load project managers only if needed for policy check (not owner)
+        if ($workRealization->user_id !== auth()->id() && $workRealization->project_id) {
+            $workRealization->load('project.managers');
+        }
+        
         $this->authorize('update', $workRealization);
 
         $workPlans = WorkPlan::where('user_id', auth()->id())
@@ -197,6 +215,11 @@ class WorkRealizationController extends Controller
      */
     public function update(Request $request, WorkRealization $workRealization)
     {
+        // Load project managers only if needed for policy check (not owner)
+        if ($workRealization->user_id !== auth()->id() && $workRealization->project_id) {
+            $workRealization->load('project.managers');
+        }
+        
         $this->authorize('update', $workRealization);
 
         $validated = $request->validate([
@@ -270,6 +293,11 @@ class WorkRealizationController extends Controller
      */
     public function destroy(WorkRealization $workRealization)
     {
+        // Load project managers only if needed for policy check (not owner)
+        if ($workRealization->user_id !== auth()->id() && $workRealization->project_id) {
+            $workRealization->load('project.managers');
+        }
+        
         $this->authorize('delete', $workRealization);
 
         try {
