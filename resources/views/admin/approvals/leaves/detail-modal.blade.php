@@ -109,11 +109,7 @@ async function loadLeaveDetailData(id) {
             }
             
             if (footer) {
-                if (data.status === 'pending') {
-                    footer.innerHTML = generateLeaveApprovalFooter(id);
-                } else {
-                    footer.innerHTML = '<button type="button" onclick="closeLeaveDetailModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">Tutup</button>';
-                }
+                footer.innerHTML = generateLeaveApprovalFooter(id, data.status);
             }
         } else {
             if (content) {
@@ -232,29 +228,50 @@ function generateLeaveDetail(data) {
     `;
 }
 
-function generateLeaveApprovalFooter(id) {
+function generateLeaveApprovalFooter(id, status) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
     // Determine base URL based on current route
     const isAdminRoute = window.location.pathname.includes('/admin/');
     const baseUrl = isAdminRoute ? '/admin/approvals/leaves' : '/user/leave-approvals';
+    const pdfUrl = isAdminRoute ? `/admin/leaves/${id}/pdf` : `/user/leaves/${id}/pdf`;
+    const isApproved = status === 'approved' || (status && status.value === 'approved');
+    
+    let pdfButton = '';
+    if (isApproved) {
+        pdfButton = `
+            <a href="${pdfUrl}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Download PDF
+            </a>
+        `;
+    }
     
     return `
         <div class="flex justify-between items-center w-full">
-            <div class="flex-1 mr-4">
-                <form id="approve-leave-form-${id}" method="POST" action="${baseUrl}/${id}/approve" class="flex gap-2" onsubmit="event.preventDefault(); submitApproveLeaveForm(${id});">
-                    <input type="hidden" name="_token" value="${csrfToken}">
-                    <input type="text" name="admin_notes" id="approve-notes-leave-${id}" placeholder="Catatan (Opsional)" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700">
-                        Setujui
-                    </button>
-                </form>
+            <div class="flex items-center gap-2">
+                ${pdfButton}
             </div>
-            <button onclick="closeLeaveDetailModal(); setTimeout(() => openLeaveRejectModal(${id}), 300);" class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700">
-                Tolak
-            </button>
-            <button type="button" onclick="closeLeaveDetailModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 ml-2">
-                Tutup
-            </button>
+            <div class="flex items-center gap-2">
+                ${!isApproved ? `
+                <div class="flex-1 mr-4">
+                    <form id="approve-leave-form-${id}" method="POST" action="${baseUrl}/${id}/approve" class="flex gap-2" onsubmit="event.preventDefault(); submitApproveLeaveForm(${id});">
+                        <input type="hidden" name="_token" value="${csrfToken}">
+                        <input type="text" name="admin_notes" id="approve-notes-leave-${id}" placeholder="Catatan (Opsional)" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700">
+                            Setujui
+                        </button>
+                    </form>
+                </div>
+                <button onclick="closeLeaveDetailModal(); setTimeout(() => openLeaveRejectModal(${id}), 300);" class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700">
+                    Tolak
+                </button>
+                ` : ''}
+                <button type="button" onclick="closeLeaveDetailModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                    Tutup
+                </button>
+            </div>
         </div>
     `;
 }
