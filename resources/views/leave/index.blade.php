@@ -128,13 +128,14 @@
                       end_date: '{{ $leave->end_date->format('Y-m-d') }}',
                       total_days: {{ $leave->total_days }},
                       reason: {{ json_encode($leave->reason) }},
+                      status: '{{ $leave->status->value ?? $leave->status }}',
                       routePrefix: '{{ $routePrefix }}'
                     })" class="text-blue-600 hover:text-blue-800 text-xs font-medium transition-colors">
                       Edit
                     </button>
                 @endif
                 @if($canDelete && $leave->isPending())
-                    <form action="{{ route($routePrefix . '.leaves.destroy', $leave) }}" method="POST" class="inline" 
+                    <form action="{{ route($routePrefix . '.destroy', $leave) }}" method="POST" class="inline" 
                           onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengajuan cuti ini?')">
                         @csrf
                         @method('DELETE')
@@ -142,6 +143,14 @@
                             Hapus
                         </button>
                     </form>
+                @endif
+                @if($leave->status->value === 'approved')
+                    <a href="{{ route($isAdmin ? 'admin.leaves.pdf' : 'user.leaves.pdf', $leave) }}" target="_blank" class="inline-flex items-center gap-1 text-green-600 hover:text-green-800 text-xs font-medium transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        PDF
+                    </a>
                 @endif
               </div>
             </td>
@@ -182,10 +191,23 @@
     closeModal() {
       this.showModal = false;
       this.currentLeave = null;
+      this.modalMode = 'create';
     }
   }" 
-       @open-leave-modal.window="showModal = true; modalMode = $event.detail.mode; currentLeave = $event.detail.leave">
-    @include('leave.modal', ['routePrefix' => $routePrefix])
+       @open-leave-modal.window="
+         if ($event.detail.mode === 'edit' && $event.detail.leave) {
+           // Check if leave is still pending before opening edit modal
+           if ($event.detail.leave.status && $event.detail.leave.status !== 'pending') {
+             alert('Pengajuan cuti yang sudah disetujui atau ditolak tidak dapat diubah.');
+             return;
+           }
+         }
+         showModal = true; 
+         modalMode = $event.detail.mode; 
+         currentLeave = $event.detail.leave || null; 
+         console.log('Modal opened:', $event.detail);
+       ">
+    @include('leave.modal', ['routePrefix' => $routePrefix, 'leaveTypes' => $leaveTypes])
   </div>
   
   <!-- Preview Modal -->

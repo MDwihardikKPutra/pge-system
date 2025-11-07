@@ -147,10 +147,166 @@
           <h3 class="text-sm font-semibold text-gray-900 mb-3">Recent Activity</h3>
         </div>
         <div class="flex-1 overflow-y-auto min-h-0 flex flex-col">
-          <div class="space-y-2 flex-1" x-data="{ showPreviewModal: false, selectedActivity: null }">
+          <div class="space-y-2 flex-1" x-data="{ 
+            showPreviewModal: false, 
+            selectedActivity: null,
+            async openActivityPreview(activity) {
+              console.log('Opening activity preview:', activity);
+              
+              // Open full preview modal based on activity type
+              if (activity.type === 'work-plan' && activity.id) {
+                // Open work plan preview
+                try {
+                  const response = await fetch(`/user/work-plans/${activity.id}`, {
+                    headers: {
+                      'Accept': 'application/json',
+                      'X-Requested-With': 'XMLHttpRequest'
+                    }
+                  });
+                  const data = await response.json();
+                  console.log('Work plan data:', data);
+                  if (data.workPlan && window.workPlanPreviewComponent) {
+                    console.log('Using workPlanPreviewComponent');
+                    window.workPlanPreviewComponent.previewData = data.workPlan;
+                    window.workPlanPreviewComponent.showPreviewModal = true;
+                  } else {
+                    console.log('Falling back to simple preview for work-plan');
+                    // Fallback to simple preview
+                    this.selectedActivity = activity;
+                    this.showPreviewModal = true;
+                  }
+                } catch (error) {
+                  console.error('Error fetching work plan:', error);
+                  // Fallback to simple preview
+                  this.selectedActivity = activity;
+                  this.showPreviewModal = true;
+                }
+              } else if (activity.type === 'work-realization' && activity.id) {
+                // Open work realization preview
+                try {
+                  const response = await fetch(`/user/work-realizations/${activity.id}`, {
+                    headers: {
+                      'Accept': 'application/json',
+                      'X-Requested-With': 'XMLHttpRequest'
+                    }
+                  });
+                  const data = await response.json();
+                  console.log('Work realization data:', data);
+                  if (data.workRealization && window.workRealizationPreviewComponent) {
+                    console.log('Using workRealizationPreviewComponent');
+                    window.workRealizationPreviewComponent.previewData = data.workRealization;
+                    window.workRealizationPreviewComponent.showPreviewModal = true;
+                  } else {
+                    console.log('Falling back to simple preview for work-realization');
+                    // Fallback to simple preview
+                    this.selectedActivity = activity;
+                    this.showPreviewModal = true;
+                  }
+                } catch (error) {
+                  console.error('Error fetching work realization:', error);
+                  // Fallback to simple preview
+                  this.selectedActivity = activity;
+                  this.showPreviewModal = true;
+                }
+              } else if (activity.type === 'spd' && activity.id) {
+                // Open SPD preview
+                try {
+                  const response = await fetch(`/user/spd/${activity.id}`, {
+                    headers: {
+                      'Accept': 'application/json',
+                      'X-Requested-With': 'XMLHttpRequest'
+                    }
+                  });
+                  const data = await response.json();
+                  console.log('SPD data:', data);
+                  if (data.spd && window.spdFormComponent) {
+                    console.log('Using spdFormComponent');
+                    window.spdFormComponent.previewData = data.spd;
+                    window.spdFormComponent.showPreviewModal = true;
+                  } else {
+                    console.log('Falling back to simple preview for spd');
+                    // Fallback to simple preview
+                    this.selectedActivity = activity;
+                    this.showPreviewModal = true;
+                  }
+                } catch (error) {
+                  console.error('Error fetching SPD:', error);
+                  // Fallback to simple preview
+                  this.selectedActivity = activity;
+                  this.showPreviewModal = true;
+                }
+              } else if (activity.type === 'purchase' && activity.id) {
+                // Open Purchase preview
+                try {
+                  const response = await fetch(`/user/purchases/${activity.id}`, {
+                    headers: {
+                      'Accept': 'application/json',
+                      'X-Requested-With': 'XMLHttpRequest'
+                    }
+                  });
+                  const data = await response.json();
+                  console.log('Purchase data:', data);
+                  if (data.purchase && window.purchaseFormComponent) {
+                    console.log('Using purchaseFormComponent');
+                    window.purchaseFormComponent.previewData = data.purchase;
+                    window.purchaseFormComponent.showPreviewModal = true;
+                  } else {
+                    console.log('Falling back to simple preview for purchase');
+                    // Fallback to simple preview
+                    this.selectedActivity = activity;
+                    this.showPreviewModal = true;
+                  }
+                } catch (error) {
+                  console.error('Error fetching purchase:', error);
+                  // Fallback to simple preview
+                  this.selectedActivity = activity;
+                  this.showPreviewModal = true;
+                }
+              } else if (activity.type === 'vendor-payment' && activity.id) {
+                // Open Vendor Payment preview
+                try {
+                  const response = await fetch(`/user/vendor-payments/${activity.id}`, {
+                    headers: {
+                      'Accept': 'application/json',
+                      'X-Requested-With': 'XMLHttpRequest'
+                    }
+                  });
+                  const data = await response.json();
+                  console.log('Vendor Payment data:', data);
+                  if (data.vendorPayment && window.vendorPaymentFormComponent) {
+                    console.log('Using vendorPaymentFormComponent');
+                    window.vendorPaymentFormComponent.previewData = data.vendorPayment;
+                    window.vendorPaymentFormComponent.showPreviewModal = true;
+                  } else {
+                    console.log('Falling back to simple preview for vendor-payment');
+                    // Fallback to simple preview
+                    this.selectedActivity = activity;
+                    this.showPreviewModal = true;
+                  }
+                } catch (error) {
+                  console.error('Error fetching vendor payment:', error);
+                  // Fallback to simple preview
+                  this.selectedActivity = activity;
+                  this.showPreviewModal = true;
+                }
+              } else if (activity.type === 'leave' && activity.id) {
+                // Dispatch event to open leave preview
+                console.log('Dispatching leave preview event for leave ID:', activity.id);
+                window.dispatchEvent(new CustomEvent('open-preview-modal', { detail: { leaveId: activity.id } }));
+                // Also try fallback to simple preview
+                this.selectedActivity = activity;
+                this.showPreviewModal = true;
+              } else {
+                console.log('Using simple preview for activity type:', activity.type);
+                // Fallback to simple preview for other types
+                this.selectedActivity = activity;
+                this.showPreviewModal = true;
+              }
+            }
+          }">
                 @forelse($recentActivities ?? [] as $activity)
-                <div @click="selectedActivity = @js($activity); showPreviewModal = true" 
-                 class="asana-activity-item cursor-pointer">
+                <div @click="openActivityPreview(@js($activity))" 
+                 class="asana-activity-item cursor-pointer hover:bg-gray-50 transition-colors">
               <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3 flex-1 min-w-0">
                   <div class="flex-shrink-0">
@@ -223,7 +379,12 @@
     <!-- Preview Modal -->
     <div x-show="showPreviewModal" 
          x-cloak 
-         style="display: none;" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
          class="fixed inset-0 z-50 overflow-y-auto modal-overlay" 
          @click.away="showPreviewModal = false">
       <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
@@ -553,19 +714,19 @@
 
 <!-- Include Modals -->
 @if(isset($activeModules) && $activeModules->contains('key', 'spd'))
-<div x-data="spdForm" x-init="init(); window.spdFormComponent = this;">
+<div x-data="spdForm" x-init="window.spdFormComponent = $data; console.log('spdFormComponent initialized:', window.spdFormComponent)">
   @include('payment.spd.modal', ['projects' => $projects])
 </div>
 @endif
 
 @if(isset($activeModules) && $activeModules->contains('key', 'purchase'))
-<div x-data="purchaseForm" x-init="init(); window.purchaseFormComponent = this;">
+<div x-data="purchaseForm" x-init="window.purchaseFormComponent = $data; console.log('purchaseFormComponent initialized:', window.purchaseFormComponent)">
   @include('payment.purchase.modal', ['projects' => $projects])
 </div>
 @endif
 
 @if(isset($activeModules) && $activeModules->contains('key', 'vendor-payment'))
-<div x-data="vendorPaymentForm" x-init="init(); window.vendorPaymentFormComponent = this;">
+<div x-data="vendorPaymentForm" x-init="window.vendorPaymentFormComponent = $data; console.log('vendorPaymentFormComponent initialized:', window.vendorPaymentFormComponent)">
   @include('payment.vendor-payment.modal', ['projects' => $projects, 'vendors' => $vendors])
 </div>
 @endif
@@ -883,20 +1044,236 @@ document.addEventListener('alpine:init', () => {
 @endif
 
 @if(isset($activeModules) && $activeModules->contains('key', 'work-plan'))
+@include('work.work-plans.preview-modal')
 <script>
-// Work Plan uses event-based modal system, just ensure event is dispatched
+document.addEventListener('alpine:init', () => {
+    Alpine.data('workPlanPreview', () => ({
+        showPreviewModal: false,
+        previewData: null,
+        
+        async openPreviewModal(planId) {
+            try {
+                const response = await fetch(`/user/work-plans/${planId}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const data = await response.json();
+                if (data.workPlan) {
+                    this.previewData = data.workPlan;
+                    this.showPreviewModal = true;
+                }
+            } catch (error) {
+                console.error('Error fetching work plan:', error);
+                alert('Gagal memuat data rencana kerja');
+            }
+        },
+        
+        closePreviewModal() {
+            this.showPreviewModal = false;
+            this.previewData = null;
+        }
+    }));
+});
 </script>
+<div x-data="workPlanPreview()" x-init="window.workPlanPreviewComponent = $data; console.log('workPlanPreviewComponent initialized:', window.workPlanPreviewComponent)"></div>
 @endif
 
 @if(isset($activeModules) && $activeModules->contains('key', 'work-realization'))
+@include('work.work-realizations.preview-modal')
 <script>
-// Work Realization uses event-based modal system, just ensure event is dispatched
+document.addEventListener('alpine:init', () => {
+    Alpine.data('workRealizationPreview', () => ({
+        showPreviewModal: false,
+        previewData: null,
+        
+        async openPreviewModal(realizationId) {
+            try {
+                const response = await fetch(`/user/work-realizations/${realizationId}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const data = await response.json();
+                if (data.workRealization) {
+                    this.previewData = data.workRealization;
+                    this.showPreviewModal = true;
+                }
+            } catch (error) {
+                console.error('Error fetching work realization:', error);
+                alert('Gagal memuat data realisasi kerja');
+            }
+        },
+        
+        closePreviewModal() {
+            this.showPreviewModal = false;
+            this.previewData = null;
+        }
+    }));
+});
 </script>
+<div x-data="workRealizationPreview()" x-init="window.workRealizationPreviewComponent = $data; console.log('workRealizationPreviewComponent initialized:', window.workRealizationPreviewComponent)"></div>
+@endif
+
+@if(isset($activeModules) && $activeModules->contains('key', 'spd'))
+@include('payment.spd.preview-modal')
+@push('alpine-init')
+<script>
+// Register SPD form component for dashboard
+(function() {
+    function registerSpdForm() {
+        if (typeof Alpine === 'undefined') return;
+        
+        if (!Alpine.store('spdFormRegistered')) {
+            Alpine.data('spdForm', () => ({
+                showModal: false,
+                showPreviewModal: false,
+                previewData: null,
+                async openPreviewModal(spdId) {
+                    try {
+                        const response = await fetch(`/user/spd/${spdId}`, {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        const data = await response.json();
+                        if (data.spd) {
+                            this.previewData = data.spd;
+                            this.showPreviewModal = true;
+                        }
+                    } catch (error) {
+                        console.error('Error fetching SPD:', error);
+                        alert('Gagal memuat data SPD');
+                    }
+                },
+                closePreviewModal() {
+                    this.showPreviewModal = false;
+                    this.previewData = null;
+                }
+            }));
+            Alpine.store('spdFormRegistered', true);
+        }
+    }
+    
+    if (typeof Alpine !== 'undefined' && Alpine.version) {
+        registerSpdForm();
+    } else {
+        document.addEventListener('alpine:init', registerSpdForm);
+    }
+})();
+</script>
+@endpush
+@endif
+
+@if(isset($activeModules) && $activeModules->contains('key', 'purchase'))
+@include('payment.purchase.preview-modal')
+@push('alpine-init')
+<script>
+// Register Purchase form component for dashboard
+(function() {
+    function registerPurchaseForm() {
+        if (typeof Alpine === 'undefined') return;
+        
+        if (!Alpine.store('purchaseFormRegistered')) {
+            Alpine.data('purchaseForm', () => ({
+                showModal: false,
+                showPreviewModal: false,
+                previewData: null,
+                async openPreviewModal(purchaseId) {
+                    try {
+                        const response = await fetch(`/user/purchases/${purchaseId}`, {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        const data = await response.json();
+                        if (data.purchase) {
+                            this.previewData = data.purchase;
+                            this.showPreviewModal = true;
+                        }
+                    } catch (error) {
+                        console.error('Error fetching purchase:', error);
+                        alert('Gagal memuat data pembelian');
+                    }
+                },
+                closePreviewModal() {
+                    this.showPreviewModal = false;
+                    this.previewData = null;
+                }
+            }));
+            Alpine.store('purchaseFormRegistered', true);
+        }
+    }
+    
+    if (typeof Alpine !== 'undefined' && Alpine.version) {
+        registerPurchaseForm();
+    } else {
+        document.addEventListener('alpine:init', registerPurchaseForm);
+    }
+})();
+</script>
+@endpush
+@endif
+
+@if(isset($activeModules) && $activeModules->contains('key', 'vendor-payment'))
+@include('payment.vendor-payment.preview-modal')
+@push('alpine-init')
+<script>
+// Register Vendor Payment form component for dashboard
+(function() {
+    function registerVendorPaymentForm() {
+        if (typeof Alpine === 'undefined') return;
+        
+        if (!Alpine.store('vendorPaymentFormRegistered')) {
+            Alpine.data('vendorPaymentForm', () => ({
+                showModal: false,
+                showPreviewModal: false,
+                previewData: null,
+                async openPreviewModal(vpId) {
+                    try {
+                        const response = await fetch(`/user/vendor-payments/${vpId}`, {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        const data = await response.json();
+                        if (data.vendorPayment) {
+                            this.previewData = data.vendorPayment;
+                            this.showPreviewModal = true;
+                        }
+                    } catch (error) {
+                        console.error('Error fetching vendor payment:', error);
+                        alert('Gagal memuat data pembayaran vendor');
+                    }
+                },
+                closePreviewModal() {
+                    this.showPreviewModal = false;
+                    this.previewData = null;
+                }
+            }));
+            Alpine.store('vendorPaymentFormRegistered', true);
+        }
+    }
+    
+    if (typeof Alpine !== 'undefined' && Alpine.version) {
+        registerVendorPaymentForm();
+    } else {
+        document.addEventListener('alpine:init', registerVendorPaymentForm);
+    }
+})();
+</script>
+@endpush
 @endif
 
 @if(isset($activeModules) && $activeModules->contains('key', 'leave'))
+@include('leave.preview-modal')
 <script>
-// Leave uses event-based modal system, just ensure event is dispatched
+// Leave uses event-based modal system, already handled in leave preview modal
 </script>
 @endif
 @endpush

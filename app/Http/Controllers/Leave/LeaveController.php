@@ -204,6 +204,14 @@ class LeaveController extends Controller
     public function edit($id)
     {
         $leave = \App\Models\LeaveRequest::findOrFail($id);
+        
+        // Check if leave request is still pending (can't edit if already approved/rejected)
+        if (!$leave->isPending()) {
+            $routeName = auth()->user()->hasRole('admin') ? 'admin.leaves.index' : 'user.leaves.index';
+            return redirect()->route($routeName)
+                ->with('error', 'Pengajuan cuti yang sudah disetujui atau ditolak tidak dapat diubah.');
+        }
+        
         $this->authorize('update', $leave);
 
         $leaveTypes = LeaveType::where('is_active', true)->orderBy('name')->get();
@@ -217,6 +225,14 @@ class LeaveController extends Controller
     public function update(Request $request, $id)
     {
         $leave = \App\Models\LeaveRequest::findOrFail($id);
+        
+        // Check if leave request is still pending (can't edit if already approved/rejected)
+        if (!$leave->isPending()) {
+            $routeName = auth()->user()->hasRole('admin') ? 'admin.leaves.index' : 'user.leaves.index';
+            return redirect()->route($routeName)
+                ->with('error', 'Pengajuan cuti yang sudah disetujui atau ditolak tidak dapat diubah.');
+        }
+        
         $this->authorize('update', $leave);
 
         $validated = $request->validate([
@@ -319,5 +335,26 @@ class LeaveController extends Controller
         }
 
         return response()->download($filePath, basename($leave->attachment_path));
+    }
+
+    /**
+     * Download PDF for approved leave request
+     */
+    public function downloadPDF($id)
+    {
+        $leave = \App\Models\LeaveRequest::with(['user', 'leaveType', 'approvedBy'])->findOrFail($id);
+        $this->authorize('view', $leave);
+
+        // Only allow download for approved leave requests
+        if ($leave->status->value !== 'approved') {
+            abort(403, 'PDF hanya tersedia untuk pengajuan cuti yang sudah disetujui.');
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.leave', compact('leave'))
+            ->setPaper('a4', 'portrait');
+
+        $filename = 'Surat_Cuti_' . $leave->leave_number . '.pdf';
+        
+        return $pdf->download($filename);
     }
 }

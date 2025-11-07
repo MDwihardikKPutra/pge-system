@@ -173,4 +173,26 @@ class SpdController extends BaseController
             $spd->id
         );
     }
+
+    /**
+     * Download PDF for approved SPD
+     */
+    public function downloadPDF(SPD $spd)
+    {
+        $this->authorize('view', $spd);
+        
+        // Only allow download for approved SPD
+        if ($spd->status->value !== 'approved') {
+            abort(403, 'PDF hanya tersedia untuk SPD yang sudah disetujui.');
+        }
+
+        $spd->load(['user', 'project', 'approvedBy']);
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.spd', compact('spd'))
+            ->setPaper('a4', 'portrait');
+
+        $filename = 'SPD_' . $spd->spd_number . '.pdf';
+        
+        return $pdf->download($filename);
+    }
 }

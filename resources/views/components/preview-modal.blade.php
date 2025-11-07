@@ -36,7 +36,10 @@
                 {{ $slot }}
             </div>
 
-            <div class="bg-gray-50 px-6 py-4 flex justify-end">
+            <div class="bg-gray-50 px-6 py-4 flex justify-between items-center">
+                <div>
+                    {{ $footer ?? '' }}
+                </div>
                 <button type="button" @click="{{ $closeFunction }}()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
                     Tutup
                 </button>

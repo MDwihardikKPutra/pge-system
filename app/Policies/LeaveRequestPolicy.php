@@ -44,18 +44,18 @@ class LeaveRequestPolicy
      */
     public function update(User $user, LeaveRequest $leaveRequest): bool
     {
-        // Admin can update all
+        // Can only update if status is pending (applies to both admin and user)
+        if ($leaveRequest->status->value !== 'pending') {
+            return false;
+        }
+
+        // Admin can update all pending leave requests
         if ($user->hasRole('admin')) {
             return true;
         }
 
-        // Only owner can update, and only if status is pending
-        if ($leaveRequest->user_id !== $user->id) {
-            return false;
-        }
-
-        // Can only update if status is pending
-        return $leaveRequest->status->value === 'pending';
+        // Only owner can update their own pending leave requests
+        return $leaveRequest->user_id === $user->id;
     }
 
     /**

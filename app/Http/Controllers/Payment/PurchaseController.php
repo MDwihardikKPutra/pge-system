@@ -145,4 +145,26 @@ class PurchaseController extends BaseController
             $purchase->id
         );
     }
+
+    /**
+     * Download PDF for approved Purchase
+     */
+    public function downloadPDF(Purchase $purchase)
+    {
+        $this->authorize('view', $purchase);
+        
+        // Only allow download for approved Purchase
+        if ($purchase->status->value !== 'approved') {
+            abort(403, 'PDF hanya tersedia untuk Pembelian yang sudah disetujui.');
+        }
+
+        $purchase->load(['user', 'project', 'approvedBy']);
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.purchase', compact('purchase'))
+            ->setPaper('a4', 'portrait');
+
+        $filename = 'Pembelian_' . $purchase->purchase_number . '.pdf';
+        
+        return $pdf->download($filename);
+    }
 }

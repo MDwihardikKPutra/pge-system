@@ -148,4 +148,26 @@ class VendorPaymentController extends BaseController
             $vendorPayment->id
         );
     }
+
+    /**
+     * Download PDF for approved Vendor Payment
+     */
+    public function downloadPDF(VendorPayment $vendorPayment)
+    {
+        $this->authorize('view', $vendorPayment);
+        
+        // Only allow download for approved Vendor Payment
+        if ($vendorPayment->status->value !== 'approved') {
+            abort(403, 'PDF hanya tersedia untuk Pembayaran Vendor yang sudah disetujui.');
+        }
+
+        $vendorPayment->load(['user', 'vendor', 'project', 'approvedBy']);
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.vendor-payment', compact('vendorPayment'))
+            ->setPaper('a4', 'portrait');
+
+        $filename = 'Pembayaran_Vendor_' . $vendorPayment->payment_number . '.pdf';
+        
+        return $pdf->download($filename);
+    }
 }

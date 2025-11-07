@@ -54,6 +54,7 @@ Route::middleware('role:admin')->group(function () {
         'destroy' => 'leaves.destroy',
     ]);
     Route::get('/leaves/{leave}/attachment/download', [LeaveController::class, 'downloadAttachment'])->name('leaves.attachment.download');
+    Route::get('/leaves/{leave}/pdf', [LeaveController::class, 'downloadPDF'])->name('leaves.pdf');
     
     // Payment Submission Routes - Each module has its own route
     Route::resource('spd', SpdController::class)->only(['index', 'show', 'store', 'update', 'destroy'])->names([
@@ -63,6 +64,7 @@ Route::middleware('role:admin')->group(function () {
         'update' => 'spd.update',
         'destroy' => 'spd.destroy',
     ]);
+    Route::get('/spd/{spd}/pdf', [SpdController::class, 'downloadPDF'])->name('spd.pdf');
     Route::resource('purchases', PurchaseController::class)->only(['index', 'show', 'store', 'update', 'destroy'])->names([
         'index' => 'purchases.index',
         'show' => 'purchases.show',
@@ -70,6 +72,7 @@ Route::middleware('role:admin')->group(function () {
         'update' => 'purchases.update',
         'destroy' => 'purchases.destroy',
     ]);
+    Route::get('/purchases/{purchase}/pdf', [PurchaseController::class, 'downloadPDF'])->name('purchases.pdf');
     Route::resource('vendor-payments', VendorPaymentController::class)->only(['index', 'show', 'store', 'update', 'destroy'])->names([
         'index' => 'vendor-payments.index',
         'show' => 'vendor-payments.show',
@@ -77,6 +80,7 @@ Route::middleware('role:admin')->group(function () {
         'update' => 'vendor-payments.update',
         'destroy' => 'vendor-payments.destroy',
     ]);
+    Route::get('/vendor-payments/{vendorPayment}/pdf', [VendorPaymentController::class, 'downloadPDF'])->name('vendor-payments.pdf');
     
     // Approval Routes (Admin can approve everything)
     Route::prefix('approvals')->name('approvals.')->group(function () {

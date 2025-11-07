@@ -31,6 +31,7 @@ Route::middleware('role:user')->group(function () {
     // Leave Management Routes
     Route::resource('leaves', LeaveController::class);
     Route::get('/leaves/{leave}/attachment/download', [LeaveController::class, 'downloadAttachment'])->name('user.leaves.attachment.download');
+    Route::get('/leaves/{leave}/pdf', [LeaveController::class, 'downloadPDF'])->name('leaves.pdf');
     
     // Leave Approval Routes (permission checked in controller)
     // Uses same view as admin - shared view at admin.approvals.leaves.index
@@ -44,8 +45,11 @@ Route::middleware('role:user')->group(function () {
     
     // Payment Submission Routes - Each module has its own route
     Route::resource('spd', SpdController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+    Route::get('/spd/{spd}/pdf', [SpdController::class, 'downloadPDF'])->name('spd.pdf');
     Route::resource('purchases', PurchaseController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+    Route::get('/purchases/{purchase}/pdf', [PurchaseController::class, 'downloadPDF'])->name('purchases.pdf');
     Route::resource('vendor-payments', VendorPaymentController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+    Route::get('/vendor-payments/{vendorPayment}/pdf', [VendorPaymentController::class, 'downloadPDF'])->name('vendor-payments.pdf');
     
     // Payment Approval Routes (permission checked in controller)
     // Uses same view as admin - shared view at admin.approvals.payments.index

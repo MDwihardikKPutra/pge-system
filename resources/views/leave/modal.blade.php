@@ -38,9 +38,11 @@
                         <div>
                             <h3 class="text-xl font-bold text-white">
                                 <span x-show="modalMode === 'create'">Pengajuan Cuti & Izin</span>
+                                <span x-show="modalMode === 'edit'">Edit Pengajuan Cuti & Izin</span>
                                 <span x-show="modalMode === 'view'">Detail Pengajuan Cuti</span>
                             </h3>
                             <p class="text-sm text-gray-300 mt-0.5" x-show="modalMode === 'create'">Lengkapi form di bawah untuk mengajukan cuti</p>
+                            <p class="text-sm text-gray-300 mt-0.5" x-show="modalMode === 'edit'">Ubah informasi pengajuan cuti Anda</p>
                             <p class="text-sm text-gray-300 mt-0.5" x-show="modalMode === 'view'">Informasi detail pengajuan cuti Anda</p>
                         </div>
                     </div>
@@ -120,7 +122,7 @@
                 <div class="mt-6 flex justify-between gap-3 border-t pt-4">
                     <button type="button" @click="closeModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">Tutup</button>
                     <div class="flex gap-2">
-                        <a x-show="currentLeave?.status === 'approved'" :href="'/user/leaves/' + currentLeave?.id + '/pdf'" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors">
+                        <a x-show="currentLeave?.status === 'approved'" :href="'{{ url('/') }}/{{ $routePrefix === 'admin.leaves' ? 'admin' : 'user' }}/leaves/' + currentLeave?.id + '/pdf'" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                             Download PDF
                         </a>
@@ -178,6 +180,103 @@
                     <button type="submit" class="px-4 py-2 text-white rounded-lg transition-colors" style="background-color: #0a1628;" onmouseover="this.style.backgroundColor='#1e293b'" onmouseout="this.style.backgroundColor='#0a1628'">Ajukan Cuti</button>
                 </div>
             </form>
+
+            <!-- Edit Mode -->
+            <div x-show="modalMode === 'edit' && currentLeave && currentLeave.id" x-cloak style="display: none;">
+                <div class="px-6 py-4">
+                    <template x-if="currentLeave && currentLeave.id">
+                        <div>
+                            <form :action="'{{ url('/') }}/{{ $routePrefix === 'admin.leaves' ? 'admin' : 'user' }}/leaves/' + currentLeave.id" method="POST" enctype="multipart/form-data" x-data="{ 
+                                getParentScope() {
+                                    let el = $el.parentElement;
+                                    while (el) {
+                                        if (el._x_dataStack && el._x_dataStack.length > 0) {
+                                            let data = el._x_dataStack[0];
+                                            if (data && typeof data.currentLeave !== 'undefined') {
+                                                return data;
+                                            }
+                                        }
+                                        el = el.parentElement;
+                                    }
+                                    return null;
+                                },
+                                initFormData() {
+                                    let parent = this.getParentScope();
+                                    if (parent && parent.currentLeave) {
+                                        let leave = parent.currentLeave;
+                                        this.startDate = leave.start_date || '';
+                                        this.endDate = leave.end_date || '';
+                                        this.leaveTypeId = leave.leave_type_id || '';
+                                        this.reason = leave.reason || '';
+                                    }
+                                },
+                                startDate: '', 
+                                endDate: '', 
+                                leaveTypeId: '',
+                                reason: '',
+                                calculateDays() { 
+                                    if (this.startDate && this.endDate) { 
+                                        const start = new Date(this.startDate); 
+                                        const end = new Date(this.endDate); 
+                                        const diffTime = Math.abs(end - start); 
+                                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
+                                        return diffDays; 
+                                    } 
+                                    return 0; 
+                                }
+                            }" x-init="initFormData()">
+                    @csrf
+                    @method('PUT')
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Cuti <span class="text-red-500">*</span></label>
+                            <select name="leave_type_id" x-model="leaveTypeId" required class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">-- Pilih Jenis Cuti --</option>
+                                @foreach($leaveTypes as $type)
+                                    <option value="{{ $type->id }}">{{ $type->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('leave_type_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai <span class="text-red-500">*</span></label>
+                                <input type="date" name="start_date" x-model="startDate" @change="startDate = $event.target.value" required :min="new Date().toISOString().split('T')[0]" class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                                @error('start_date')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai <span class="text-red-500">*</span></label>
+                                <input type="date" name="end_date" x-model="endDate" @change="endDate = $event.target.value" required :min="startDate || new Date().toISOString().split('T')[0]" class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                                @error('end_date')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                            </div>
+                        </div>
+                        <div x-show="startDate && endDate" class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <span class="text-sm font-medium text-blue-900">Total: <span x-text="calculateDays()"></span> hari</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Alasan <span class="text-red-500">*</span></label>
+                            <textarea name="reason" x-model="reason" required rows="4" class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" placeholder="Jelaskan alasan pengajuan cuti Anda..."></textarea>
+                            @error('reason')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Dokumen Pendukung (Opsional)</label>
+                            <input type="file" name="attachment" accept=".pdf,.jpg,.jpeg,.png" class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                            <p class="mt-1 text-xs text-gray-500">PDF, JPG, PNG, max 5MB. Kosongkan jika tidak ingin mengubah dokumen.</p>
+                            @error('attachment')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end gap-3 border-t pt-4">
+                        <button type="button" @click="closeModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">Batal</button>
+                        <button type="submit" class="px-4 py-2 text-white rounded-lg transition-colors" style="background-color: #0a1628;" onmouseover="this.style.backgroundColor='#1e293b'" onmouseout="this.style.backgroundColor='#0a1628'">Simpan Perubahan</button>
+                    </div>
+                        </form>
+                        </div>
+                    </template>
+                </div>
+            </div>
         </div>
     </div>
 </div>
