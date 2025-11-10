@@ -233,6 +233,7 @@ function generateLeaveApprovalFooter(id, status) {
     // Determine base URL based on current route
     const isAdminRoute = window.location.pathname.includes('/admin/');
     const baseUrl = isAdminRoute ? '/admin/approvals/leaves' : '/user/leave-approvals';
+    // Use route name for PDF - admin uses admin.leaves.pdf, user uses user.leaves.pdf
     const pdfUrl = isAdminRoute ? `/admin/leaves/${id}/pdf` : `/user/leaves/${id}/pdf`;
     const isApproved = status === 'approved' || (status && status.value === 'approved');
     
