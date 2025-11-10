@@ -175,7 +175,13 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
                 <p class="text-sm font-medium text-gray-900 mb-0.5">Belum ada activity log</p>
-                <p class="text-xs text-gray-500">Tidak ada aktivitas yang ditemukan untuk filter yang dipilih.</p>
+                <p class="text-xs text-gray-500">
+                    @if(request()->hasAny(['search', 'user_id', 'action', 'model_type', 'date_from', 'date_to']))
+                        Tidak ada aktivitas yang ditemukan untuk filter yang dipilih.
+                    @else
+                        Belum ada aktivitas yang tercatat di sistem.
+                    @endif
+                </p>
             </div>
             @endif
         </div>
