@@ -114,7 +114,6 @@
                         <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Action</th>
                         <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Deskripsi</th>
                         <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Model</th>
-                        <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">IP Address</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-slate-200">
@@ -151,9 +150,6 @@
                                 @else
                                     <span class="text-xs text-slate-400">-</span>
                                 @endif
-                            </td>
-                            <td class="px-4 py-3 whitespace-nowrap text-xs text-slate-900 font-mono">
-                                {{ $log->ip_address ?? '-' }}
                             </td>
                         </tr>
                     @endforeach
