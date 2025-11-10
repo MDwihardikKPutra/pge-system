@@ -42,11 +42,22 @@ class LogController extends Controller
             });
         }
 
-        $activityLogs = $query->paginate(50);
+        $activityLogs = $query->paginate(50)->withQueryString();
 
-        // Get unique actions and model types for filters (only for current user)
-        $actions = ActivityLog::where('user_id', auth()->id())->distinct()->pluck('action')->sort();
-        $modelTypes = ActivityLog::where('user_id', auth()->id())->distinct()->pluck('model_type')->filter()->sort();
+        // Get unique actions and model types for filters (only for current user, only non-null)
+        $actions = ActivityLog::where('user_id', auth()->id())
+            ->whereNotNull('action')
+            ->distinct()
+            ->pluck('action')
+            ->sort()
+            ->values();
+        $modelTypes = ActivityLog::where('user_id', auth()->id())
+            ->whereNotNull('model_type')
+            ->distinct()
+            ->pluck('model_type')
+            ->filter()
+            ->sort()
+            ->values();
 
         return view('user.activity-log.index', compact('activityLogs', 'actions', 'modelTypes'));
     }

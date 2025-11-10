@@ -64,6 +64,46 @@ class LogHelper
 
         self::logError($message, $exception, $context);
     }
+
+    /**
+     * Get badge color class for action
+     *
+     * @param string $action
+     * @return string
+     */
+    public static function getActionBadgeClass(string $action): string
+    {
+        return match($action) {
+            'created' => 'bg-green-100 text-green-800',
+            'updated' => 'bg-blue-100 text-blue-800',
+            'deleted' => 'bg-red-100 text-red-800',
+            'approved' => 'bg-green-100 text-green-800',
+            'rejected' => 'bg-red-100 text-red-800',
+            'submitted' => 'bg-yellow-100 text-yellow-800',
+            'cancelled' => 'bg-gray-100 text-gray-800',
+            default => 'bg-slate-100 text-slate-800',
+        };
+    }
+
+    /**
+     * Get action label
+     *
+     * @param string $action
+     * @return string
+     */
+    public static function getActionLabel(string $action): string
+    {
+        return match($action) {
+            'created' => 'Dibuat',
+            'updated' => 'Diperbarui',
+            'deleted' => 'Dihapus',
+            'approved' => 'Disetujui',
+            'rejected' => 'Ditolak',
+            'submitted' => 'Diajukan',
+            'cancelled' => 'Dibatalkan',
+            default => ucfirst($action),
+        };
+    }
 }
 
 

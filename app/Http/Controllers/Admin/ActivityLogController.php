@@ -14,7 +14,9 @@ class ActivityLogController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ActivityLog::with('user')->latest();
+        $query = ActivityLog::with(['user' => function($q) {
+            $q->withTrashed(); // Include soft deleted users
+        }])->latest();
 
         // Filter by user
         if ($request->filled('user_id')) {
@@ -52,12 +54,12 @@ class ActivityLogController extends Controller
             });
         }
 
-        $activityLogs = $query->paginate(50);
+        $activityLogs = $query->paginate(50)->withQueryString();
 
-        // Get unique actions and model types for filters
-        $actions = ActivityLog::distinct()->pluck('action')->sort();
-        $modelTypes = ActivityLog::distinct()->pluck('model_type')->filter()->sort();
-        $users = User::orderBy('name')->get(); // For user filter dropdown
+        // Get unique actions and model types for filters (only non-null)
+        $actions = ActivityLog::whereNotNull('action')->distinct()->pluck('action')->sort()->values();
+        $modelTypes = ActivityLog::whereNotNull('model_type')->distinct()->pluck('model_type')->filter()->sort()->values();
+        $users = User::where('is_active', true)->orderBy('name')->get(); // Only active users for filter dropdown
 
         return view('admin.activity-log.index', compact('activityLogs', 'actions', 'modelTypes', 'users'));
     }
