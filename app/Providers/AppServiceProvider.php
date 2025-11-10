@@ -16,6 +16,7 @@ use App\Models\VendorPayment;
 use App\Models\LeaveRequest;
 use App\Observers\ProjectObserver;
 use App\Observers\ActivityObserver;
+use App\Observers\ActivityLogObserver;
 use App\Policies\WorkPlanPolicy;
 use App\Policies\WorkRealizationPolicy;
 use App\Policies\LeaveRequestPolicy;
@@ -76,5 +77,13 @@ class AppServiceProvider extends ServiceProvider
         Purchase::observe(ActivityObserver::class);
         VendorPayment::observe(ActivityObserver::class);
         LeaveRequest::observe(ActivityObserver::class);
+        
+        // Register activity log observers for automatic activity logging
+        WorkPlan::observe(ActivityLogObserver::class);
+        WorkRealization::observe(ActivityLogObserver::class);
+        SPD::observe(ActivityLogObserver::class);
+        Purchase::observe(ActivityLogObserver::class);
+        VendorPayment::observe(ActivityLogObserver::class);
+        LeaveRequest::observe(ActivityLogObserver::class);
     }
 }

@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
-use App\Models\User;
 use Illuminate\Http\Request;
 
 class ActivityLogController extends Controller
@@ -14,24 +13,7 @@ class ActivityLogController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ActivityLog::with(['user' => function($q) {
-            $q->withTrashed(); // Include soft deleted users
-        }])->latest();
-
-        // Filter by user
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->user_id);
-        }
-
-        // Filter by action
-        if ($request->filled('action')) {
-            $query->where('action', $request->action);
-        }
-
-        // Filter by model type
-        if ($request->filled('model_type')) {
-            $query->where('model_type', $request->model_type);
-        }
+        $query = ActivityLog::with('user')->latest();
 
         // Filter by date range
         if ($request->filled('date_from')) {
@@ -56,11 +38,6 @@ class ActivityLogController extends Controller
 
         $activityLogs = $query->paginate(50)->withQueryString();
 
-        // Get unique actions and model types for filters (only non-null)
-        $actions = ActivityLog::whereNotNull('action')->distinct()->pluck('action')->sort()->values();
-        $modelTypes = ActivityLog::whereNotNull('model_type')->distinct()->pluck('model_type')->filter()->sort()->values();
-        $users = User::where('is_active', true)->orderBy('name')->get(); // Only active users for filter dropdown
-
-        return view('admin.activity-log.index', compact('activityLogs', 'actions', 'modelTypes', 'users'));
+        return view('admin.activity-log.index', compact('activityLogs'));
     }
 }

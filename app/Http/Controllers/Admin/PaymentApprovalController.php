@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SPD;
 use App\Models\Purchase;
 use App\Models\VendorPayment;
+use App\Models\ActivityLog;
 use App\Services\PaymentService;
 use App\Enums\ApprovalStatus;
 use App\Http\Requests\ApprovePaymentRequest;
@@ -126,6 +127,18 @@ class PaymentApprovalController extends Controller
                 $validated['notes'] ?? null
             );
 
+            // Log activity
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'approved',
+                'model_type' => SPD::class,
+                'model_id' => $spd->id,
+                'description' => 'Menyetujui SPD ' . $spd->spd_number,
+                'properties' => ['status' => 'approved', 'notes' => $validated['notes'] ?? null],
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
+
             DB::commit();
 
             return redirect()->route('admin.approvals.payments.index')
@@ -167,6 +180,18 @@ class PaymentApprovalController extends Controller
                 null,
                 $validated['rejection_reason'] ?? null
             );
+
+            // Log activity
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'rejected',
+                'model_type' => SPD::class,
+                'model_id' => $spd->id,
+                'description' => 'Menolak SPD ' . $spd->spd_number,
+                'properties' => ['status' => 'rejected', 'rejection_reason' => $validated['rejection_reason'] ?? null],
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
 
             DB::commit();
 
@@ -246,6 +271,18 @@ class PaymentApprovalController extends Controller
                 $validated['notes'] ?? null
             );
 
+            // Log activity
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'approved',
+                'model_type' => Purchase::class,
+                'model_id' => $purchase->id,
+                'description' => 'Menyetujui pembelian ' . $purchase->purchase_number,
+                'properties' => ['status' => 'approved', 'notes' => $validated['notes'] ?? null],
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
+
             DB::commit();
 
             return redirect()->route('admin.approvals.payments.index')
@@ -287,6 +324,18 @@ class PaymentApprovalController extends Controller
                 null,
                 $validated['rejection_reason'] ?? null
             );
+
+            // Log activity
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'rejected',
+                'model_type' => Purchase::class,
+                'model_id' => $purchase->id,
+                'description' => 'Menolak pembelian ' . $purchase->purchase_number,
+                'properties' => ['status' => 'rejected', 'rejection_reason' => $validated['rejection_reason'] ?? null],
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
 
             DB::commit();
 
@@ -363,6 +412,18 @@ class PaymentApprovalController extends Controller
                 $validated['notes'] ?? null
             );
 
+            // Log activity
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'approved',
+                'model_type' => VendorPayment::class,
+                'model_id' => $vendorPayment->id,
+                'description' => 'Menyetujui pembayaran vendor ' . $vendorPayment->payment_number,
+                'properties' => ['status' => 'approved', 'notes' => $validated['notes'] ?? null],
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
+
             DB::commit();
 
             return redirect()->route('admin.approvals.payments.index')
@@ -404,6 +465,18 @@ class PaymentApprovalController extends Controller
                 null,
                 $validated['rejection_reason'] ?? null
             );
+
+            // Log activity
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'rejected',
+                'model_type' => VendorPayment::class,
+                'model_id' => $vendorPayment->id,
+                'description' => 'Menolak pembayaran vendor ' . $vendorPayment->payment_number,
+                'properties' => ['status' => 'rejected', 'rejection_reason' => $validated['rejection_reason'] ?? null],
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
 
             DB::commit();
 

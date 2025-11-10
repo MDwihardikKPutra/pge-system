@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\LeaveRequest;
+use App\Models\ActivityLog;
 use App\Services\LeaveService;
 use App\Enums\ApprovalStatus;
 use Illuminate\Http\Request;
@@ -93,6 +94,18 @@ class ApprovalController extends Controller
                 $request->admin_notes
             );
 
+            // Log activity
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'approved',
+                'model_type' => LeaveRequest::class,
+                'model_id' => $leave->id,
+                'description' => 'Menyetujui permohonan cuti ' . $leave->leave_number,
+                'properties' => ['status' => 'approved', 'admin_notes' => $request->admin_notes],
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
+
             DB::commit();
 
             return redirect()->route('admin.approvals.leaves')
@@ -135,6 +148,18 @@ class ApprovalController extends Controller
                 null,
                 $request->rejection_reason
             );
+
+            // Log activity
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'rejected',
+                'model_type' => LeaveRequest::class,
+                'model_id' => $leave->id,
+                'description' => 'Menolak permohonan cuti ' . $leave->leave_number,
+                'properties' => ['status' => 'rejected', 'rejection_reason' => $request->rejection_reason],
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
 
             DB::commit();
 

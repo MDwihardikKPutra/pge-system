@@ -33,34 +33,6 @@
                 </div>
                 
                 <div class="flex items-center gap-2">
-                    <label class="text-xs font-medium text-gray-300 whitespace-nowrap">Action:</label>
-                    <select name="action" 
-                            class="text-xs px-2 py-1.5 rounded border border-gray-600 bg-slate-800 text-white focus:ring-1 focus:ring-blue-400 focus:border-blue-400"
-                            style="min-width: 120px;">
-                        <option value="">Semua Action</option>
-                        @foreach($actions as $action)
-                            <option value="{{ $action }}" {{ request('action') == $action ? 'selected' : '' }}>
-                                {{ \App\Helpers\LogHelper::getActionLabel($action) }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                
-                <div class="flex items-center gap-2">
-                    <label class="text-xs font-medium text-gray-300 whitespace-nowrap">Tipe:</label>
-                    <select name="model_type" 
-                            class="text-xs px-2 py-1.5 rounded border border-gray-600 bg-slate-800 text-white focus:ring-1 focus:ring-blue-400 focus:border-blue-400"
-                            style="min-width: 150px;">
-                        <option value="">Semua Tipe</option>
-                        @foreach($modelTypes as $modelType)
-                            <option value="{{ $modelType }}" {{ request('model_type') == $modelType ? 'selected' : '' }}>
-                                {{ class_basename($modelType) }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                
-                <div class="flex items-center gap-2">
                     <label class="text-xs font-medium text-gray-300 whitespace-nowrap">Dari:</label>
                     <input type="date" name="date_from" value="{{ request('date_from') }}" 
                            class="text-xs px-2 py-1.5 rounded border border-gray-600 bg-slate-800 text-white focus:ring-1 focus:ring-blue-400 focus:border-blue-400"
@@ -79,7 +51,7 @@
                             class="px-3 py-1.5 text-xs font-medium text-white rounded transition-colors bg-blue-600 hover:bg-blue-700">
                         Filter
                     </button>
-                    @if(request()->hasAny(['search', 'action', 'model_type', 'date_from', 'date_to']))
+                    @if(request()->hasAny(['search', 'date_from', 'date_to']))
                     <a href="{{ route('user.activity-log.index') }}" 
                        class="px-3 py-1.5 text-xs font-medium text-gray-300 bg-slate-700 hover:bg-slate-600 rounded transition-colors">
                         Reset
@@ -153,7 +125,7 @@
                 </svg>
                 <p class="text-sm font-medium text-gray-900 mb-0.5">Belum ada activity log</p>
                 <p class="text-xs text-gray-500">
-                    @if(request()->hasAny(['search', 'action', 'model_type', 'date_from', 'date_to']))
+                    @if(request()->hasAny(['search', 'date_from', 'date_to']))
                         Tidak ada aktivitas yang ditemukan untuk filter yang dipilih.
                     @else
                         Belum ada aktivitas yang tercatat.
