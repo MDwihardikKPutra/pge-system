@@ -76,3 +76,4 @@ class VendorSeeder extends Seeder
         $this->command->info('✅ Vendors seeded: ' . count($vendors));
     }
 }
+

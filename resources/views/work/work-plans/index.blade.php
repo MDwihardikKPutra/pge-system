@@ -64,17 +64,30 @@
                         <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Project</th>
                         <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Lokasi</th>
                         <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Durasi</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Waktu</th>
                         <th class="px-4 py-2.5 text-right text-xs font-medium text-slate-700 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-slate-200">
                     @foreach($workPlans as $plan)
+                    @php
+                        $createdAt = $plan->created_at;
+                        $createdHour = $createdAt ? $createdAt->hour : null;
+                        $planDate = $plan->plan_date;
+                        $isToday = $planDate->isToday();
+                        // Hijau jika diisi sebelum jam 10, merah jika setelah jam 10
+                        if ($isToday && $createdHour !== null) {
+                            $timeColor = $createdHour < 10 ? 'text-green-600' : 'text-red-600';
+                        } else {
+                            $timeColor = 'text-slate-900';
+                        }
+                    @endphp
                     <tr class="hover:bg-slate-50">
                         <td class="px-4 py-3 whitespace-nowrap text-xs text-slate-900">
                             {{ $plan->plan_date->format('d M Y') }}
                         </td>
                         <td class="px-4 py-3">
-                            <div class="text-xs font-medium text-slate-900">{{ $plan->title }}</div>
+                            <div class="text-xs font-medium {{ $timeColor }}">{{ $plan->title }}</div>
                             <div class="text-xs text-slate-500 line-clamp-2">{{ \Illuminate\Support\Str::limit($plan->description, 100) }}</div>
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap">
@@ -101,6 +114,9 @@
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap text-xs text-slate-900">
                             {{ $plan->planned_duration_hours }}h
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-xs {{ $timeColor }}">
+                            {{ $createdAt ? $createdAt->format('H:i') : '-' }}
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap text-right text-xs font-medium">
                             <div class="flex items-center justify-end gap-2">
@@ -183,9 +199,9 @@
             
             // Cek jika tanggal yang dipilih adalah hari ini
             if (selected.getTime() === today.getTime()) {
-                // Cek apakah sudah melewati jam 10:00
+                // Cek apakah sudah melewati jam 10:00 (hanya peringatan, tidak memblokir)
                 if (now.getHours() >= 10) {
-                    this.planTimeWarning = 'Rencana kerja hari ini harus diisi sebelum jam 10:00 pagi.';
+                    this.planTimeWarning = 'Peringatan: Rencana kerja hari ini sebaiknya diisi sebelum jam 10:00 pagi.';
                 }
             }
         },

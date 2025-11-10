@@ -65,17 +65,30 @@
                         <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Lokasi</th>
                         <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Durasi</th>
                         <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Progress</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Waktu</th>
                         <th class="px-4 py-2.5 text-right text-xs font-medium text-slate-700 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-slate-200">
                     @foreach($workRealizations as $realization)
+                    @php
+                        $createdAt = $realization->created_at;
+                        $createdHour = $createdAt ? $createdAt->hour : null;
+                        $realizationDate = $realization->realization_date;
+                        $isToday = $realizationDate->isToday();
+                        // Hijau jika diisi sebelum jam 6 (18:00), merah jika setelah jam 6
+                        if ($isToday && $createdHour !== null) {
+                            $timeColor = $createdHour < 18 ? 'text-green-600' : 'text-red-600';
+                        } else {
+                            $timeColor = 'text-slate-900';
+                        }
+                    @endphp
                     <tr class="hover:bg-slate-50">
                         <td class="px-4 py-3 whitespace-nowrap text-xs text-slate-900">
                             {{ $realization->realization_date->format('d M Y') }}
                         </td>
                         <td class="px-4 py-3">
-                            <div class="text-xs font-medium text-slate-900">{{ $realization->title }}</div>
+                            <div class="text-xs font-medium {{ $timeColor }}">{{ $realization->title }}</div>
                             <div class="text-xs text-slate-500 line-clamp-2">{{ \Illuminate\Support\Str::limit($realization->description, 100) }}</div>
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap">
@@ -110,6 +123,9 @@
                                 </div>
                                 <span class="text-xs text-gray-900">{{ $realization->progress_percentage }}%</span>
                             </div>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-xs {{ $timeColor }}">
+                            {{ $createdAt ? $createdAt->format('H:i') : '-' }}
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap text-right text-xs font-medium">
                             <div class="flex items-center justify-end gap-2">
@@ -195,9 +211,9 @@
             
             // Cek jika tanggal yang dipilih adalah hari ini
             if (selected.getTime() === today.getTime()) {
-                // Cek apakah sudah melewati jam 17:00 (5 sore)
-                if (now.getHours() >= 17) {
-                    this.realizationTimeWarning = 'Realisasi kerja hari ini harus diisi sebelum jam 17:00 (5 sore).';
+                // Cek apakah sudah melewati jam 18:00 (6 sore) - hanya peringatan, tidak memblokir
+                if (now.getHours() >= 18) {
+                    this.realizationTimeWarning = 'Peringatan: Realisasi kerja hari ini sebaiknya diisi sebelum jam 18:00 (6 sore).';
                 }
             }
         },

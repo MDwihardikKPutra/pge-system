@@ -88,3 +88,4 @@ $user->hasModuleAccess('payment-approval'); // harus return true
 -   [ ] User sudah di-assign module `payment-approval`
 -   [ ] Cache sudah di-clear
 -   [ ] User sudah logout dan login lagi (untuk refresh session)
+

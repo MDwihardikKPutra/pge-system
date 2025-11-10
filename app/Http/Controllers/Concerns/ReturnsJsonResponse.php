@@ -26,3 +26,4 @@ trait ReturnsJsonResponse
 }
 
 
+

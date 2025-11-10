@@ -146,17 +146,30 @@
                         <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Project</th>
                         <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Lokasi</th>
                         <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Durasi</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Waktu</th>
                         <th class="px-4 py-2.5 text-center text-xs font-medium text-slate-700 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-slate-200">
                     @foreach($workPlans as $item)
+                    @php
+                        $createdAt = $item['created_at'] ?? null;
+                        $createdHour = $createdAt ? \Carbon\Carbon::parse($createdAt)->hour : null;
+                        $planDate = \Carbon\Carbon::parse($item['date']);
+                        $isToday = $planDate->isToday();
+                        // Hijau jika diisi sebelum jam 10, merah jika setelah jam 10
+                        if ($isToday && $createdHour !== null) {
+                            $timeColor = $createdHour < 10 ? 'text-green-600' : 'text-red-600';
+                        } else {
+                            $timeColor = 'text-slate-900';
+                        }
+                    @endphp
                     <tr class="hover:bg-slate-50">
                         <td class="px-4 py-3 whitespace-nowrap text-xs text-slate-900">
                             {{ \Carbon\Carbon::parse($item['date'])->format('d M Y') }}
                         </td>
                         <td class="px-4 py-3">
-                            <div class="text-xs font-medium text-slate-900">{{ $item['title'] }}</div>
+                            <div class="text-xs font-medium {{ $timeColor }}">{{ $item['title'] }}</div>
                             <div class="text-xs text-slate-500 line-clamp-2 mt-0.5">{{ \Illuminate\Support\Str::limit($item['description'], 100) }}</div>
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap">
@@ -182,6 +195,9 @@
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap text-xs text-slate-900">
                             {{ $item['duration'] ?? 0 }}h
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-xs {{ $timeColor }}">
+                            {{ $createdAt ? \Carbon\Carbon::parse($createdAt)->format('H:i') : '-' }}
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap text-center">
                             <button @click="loadDetail('work-plan', {{ $item['id'] }})" 
@@ -235,17 +251,30 @@
                         <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Lokasi</th>
                         <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Durasi</th>
                         <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Progress</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Waktu</th>
                         <th class="px-4 py-2.5 text-center text-xs font-medium text-slate-700 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-slate-200">
                     @foreach($workRealizations as $item)
+                    @php
+                        $createdAt = $item['created_at'] ?? null;
+                        $createdHour = $createdAt ? \Carbon\Carbon::parse($createdAt)->hour : null;
+                        $realizationDate = \Carbon\Carbon::parse($item['date']);
+                        $isToday = $realizationDate->isToday();
+                        // Hijau jika diisi sebelum jam 6 (18:00), merah jika setelah jam 6
+                        if ($isToday && $createdHour !== null) {
+                            $timeColor = $createdHour < 18 ? 'text-green-600' : 'text-red-600';
+                        } else {
+                            $timeColor = 'text-slate-900';
+                        }
+                    @endphp
                     <tr class="hover:bg-slate-50">
                         <td class="px-4 py-3 whitespace-nowrap text-xs text-slate-900">
                             {{ \Carbon\Carbon::parse($item['date'])->format('d M Y') }}
                         </td>
                         <td class="px-4 py-3">
-                            <div class="text-xs font-medium text-slate-900">{{ $item['title'] }}</div>
+                            <div class="text-xs font-medium {{ $timeColor }}">{{ $item['title'] }}</div>
                             <div class="text-xs text-slate-500 line-clamp-2 mt-0.5">{{ \Illuminate\Support\Str::limit($item['description'], 100) }}</div>
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap">
@@ -283,6 +312,9 @@
                             @else
                             <span class="text-xs text-slate-400">-</span>
                             @endif
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-xs {{ $timeColor }}">
+                            {{ $createdAt ? \Carbon\Carbon::parse($createdAt)->format('H:i') : '-' }}
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap text-center">
                             <button @click="loadDetail('work-realization', {{ $item['id'] }})" 

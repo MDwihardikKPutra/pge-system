@@ -90,3 +90,4 @@ class WorkDataSeeder extends Seeder
         $this->command->info('✅ Work Realizations seeded: ' . WorkRealization::count());
     }
 }
+

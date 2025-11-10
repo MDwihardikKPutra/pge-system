@@ -107,16 +107,6 @@ class WorkRealizationController extends Controller
         // Remove output_files from validated since we'll handle it separately
         unset($validated['output_files']);
 
-        // Validasi waktu: Realisasi kerja harus diisi sebelum jam deadline
-        $realizationDate = Carbon::parse($validated['realization_date']);
-        $now = Carbon::now();
-        
-        if ($realizationDate->isToday() && $now->hour >= WorkTimeLimits::WORK_REALIZATION_DEADLINE_HOUR) {
-            return back()->withErrors([
-                'realization_date' => 'Realisasi kerja hari ini harus diisi sebelum jam ' . WorkTimeLimits::WORK_REALIZATION_DEADLINE_HOUR . ':00.'
-            ])->withInput();
-        }
-
         try {
             DB::beginTransaction();
 
@@ -238,16 +228,6 @@ class WorkRealizationController extends Controller
 
         // Remove output_files from validated since we'll handle it separately
         unset($validated['output_files']);
-
-        // Validasi waktu: Realisasi kerja harus diisi sebelum jam deadline
-        $realizationDate = Carbon::parse($validated['realization_date']);
-        $now = Carbon::now();
-        
-        if ($realizationDate->isToday() && $now->hour >= WorkTimeLimits::WORK_REALIZATION_DEADLINE_HOUR) {
-            return back()->withErrors([
-                'realization_date' => 'Realisasi kerja hari ini harus diisi sebelum jam ' . WorkTimeLimits::WORK_REALIZATION_DEADLINE_HOUR . ':00.'
-            ])->withInput();
-        }
 
         try {
             // Auto-generate title from description if not provided

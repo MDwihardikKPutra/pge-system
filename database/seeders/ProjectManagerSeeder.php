@@ -50,3 +50,4 @@ class ProjectManagerSeeder extends Seeder
         $this->command->info('✅ Project Managers assigned');
     }
 }
+

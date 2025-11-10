@@ -65,3 +65,4 @@ class LeaveDataSeeder extends Seeder
         $this->command->info('✅ Leave Requests seeded: ' . LeaveRequest::count());
     }
 }
+

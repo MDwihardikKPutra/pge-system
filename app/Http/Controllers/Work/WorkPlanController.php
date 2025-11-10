@@ -86,16 +86,6 @@ class WorkPlanController extends Controller
             'planned_duration_hours' => 'required|numeric|min:0.5|max:24',
         ]);
 
-        // Validasi waktu: Rencana kerja harus diisi sebelum jam deadline
-        $planDate = Carbon::parse($validated['plan_date']);
-        $now = Carbon::now();
-        
-        if ($planDate->isToday() && $now->hour >= WorkTimeLimits::WORK_PLAN_DEADLINE_HOUR) {
-            return back()->withErrors([
-                'plan_date' => 'Rencana kerja hari ini harus diisi sebelum jam ' . WorkTimeLimits::WORK_PLAN_DEADLINE_HOUR . ':00 pagi.'
-            ])->withInput();
-        }
-
         try {
             DB::beginTransaction();
 

@@ -288,3 +288,4 @@ Fitur **Project Searchable Select** menggantikan dropdown project tradisional de
 -   [Alpine.js Documentation](https://alpinejs.dev/)
 -   [Laravel Eloquent](https://laravel.com/docs/eloquent)
 -   [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
+

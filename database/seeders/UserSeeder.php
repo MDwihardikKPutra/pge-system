@@ -77,3 +77,4 @@ class UserSeeder extends Seeder
         return User::all()->toArray();
     }
 }
+
