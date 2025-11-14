@@ -1,126 +1,189 @@
-# PGE System - Integrated Management Platform
+<div align="center">
 
-<p align="center">
-  <img src="public/logopge.png" alt="PGE System Logo" width="200">
-</p>
+# 🚀 PGE System
 
-<p align="center">
-  <strong>Sistem Manajemen Kantor Terintegrasi untuk Mengelola Workflow Operasional Perusahaan</strong>
-</p>
+**Integrated Management Platform**
 
-<p align="center">
-  <strong>Version 1.10.0</strong> • Laravel 11 • Production Ready ✅
-</p>
+_Sistem manajemen kantor terintegrasi untuk mengelola workflow operasional perusahaan_
+
+![Version](https://img.shields.io/badge/version-1.10.0-blue?style=for-the-badge)
+![Laravel](https://img.shields.io/badge/Laravel-11.31-red?style=for-the-badge&logo=laravel)
+![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=for-the-badge&logo=php)
+![Status](https://img.shields.io/badge/status-production%20ready-success?style=for-the-badge)
+
+[Features](#-fitur-utama) • [Tech Stack](#-tech-stack) • [Installation](#-quick-start) • [Documentation](#-dokumentasi)
+
+</div>
 
 ---
 
-## 📖 Tentang
+## ✨ Apa itu PGE System?
 
-**PGE System** adalah platform manajemen kantor komprehensif yang membantu perusahaan mengelola seluruh workflow operasional, mulai dari perencanaan kerja, realisasi, keuangan, cuti, hingga monitoring project.
+**PGE System** adalah platform manajemen kantor all-in-one yang bikin workflow perusahaan jadi lebih smooth! 🎯
 
-### Karakteristik Utama
+Dari perencanaan kerja, realisasi, keuangan, cuti, sampai monitoring project - semua bisa di-handle dalam satu sistem yang powerful dan mudah digunakan.
 
--   ✅ **Modular System** - Setiap fitur adalah modul terpisah yang dapat di-enable/disable per user
--   ✅ **Role-Based Access** - Kontrol akses berdasarkan role (Admin/User) dengan permission granular
--   ✅ **Approval Workflow** - Sistem approval terintegrasi untuk semua jenis pengajuan
--   ✅ **Project Management** - Tracking dan monitoring project dengan Project Manager assignment
--   ✅ **Real-time Notifications** - Notifikasi untuk approval, submission, dan reminder
--   ✅ **PDF Generation** - Generate dokumen PDF untuk SPD, Purchase, Payment, dan Leave
+### 🎨 Kenapa Pilih PGE System?
+
+| Feature                 | Description                                                         |
+| ----------------------- | ------------------------------------------------------------------- |
+| 🧩 **Modular**          | Setiap fitur adalah modul terpisah, bisa di-enable/disable per user |
+| 🔐 **RBAC**             | Role-based access control yang super flexible                       |
+| ✅ **Approval Flow**    | Sistem approval terintegrasi untuk semua jenis pengajuan            |
+| 📊 **Project Tracking** | Monitoring project dengan Project Manager assignment                |
+| 🔔 **Real-time**        | Notifikasi real-time untuk semua event penting                      |
+| 📄 **PDF Ready**        | Auto-generate PDF untuk semua dokumen penting                       |
 
 ---
 
 ## 🚀 Fitur Utama
 
-### Work Management
+### 📋 Work Management
 
-Perencanaan dan realisasi kerja harian dengan assignment ke project, tracking progress, dan file attachments.
+> Perencanaan & realisasi kerja harian dengan tracking progress yang detail
 
-### Leave Management
+-   ✅ Work Plan dengan assignment ke project
+-   📸 Work Realization dengan file attachments
+-   📊 Progress tracking yang real-time
+-   🔍 Filter berdasarkan tanggal, project, dan user
 
-Sistem pengajuan cuti dengan approval workflow, tracking sisa cuti, dan generate sertifikat PDF.
+### 🏝️ Leave Management
 
-### SPD (Surat Perjalanan Dinas)
+> Sistem cuti yang bikin HR jadi lebih chill
 
-Pengajuan perjalanan dinas dengan detail biaya, approval workflow, dan generate dokumen SPD.
+-   📅 Multiple jenis cuti (Annual, Sick, Personal, dll)
+-   💰 Tracking sisa cuti tahunan
+-   📝 Approval workflow yang smooth
+-   📄 Auto-generate sertifikat PDF
 
-### Purchase Management
+### ✈️ SPD (Surat Perjalanan Dinas)
 
-Sistem pengajuan pembelian barang/jasa dengan detail item, approval workflow, dan tracking status.
+> Business travel management yang praktis
 
-### Vendor Payment
+-   🗺️ Detail perjalanan lengkap
+-   💵 Dynamic cost table
+-   ✅ Approval workflow
+-   📄 Generate dokumen SPD resmi
 
-Sistem pembayaran ke vendor dengan invoice tracking, approval workflow, dan generate dokumen payment.
+### 🛒 Purchase Management
 
-### Approval System
+> Procurement system yang efisien
 
-Sistem approval terpusat untuk Leave dan Payment (SPD, Purchase, Vendor Payment) dengan real-time notifications.
+-   📦 Detail item dengan quantity & harga
+-   💰 Auto-calculation total
+-   ✅ Approval workflow
+-   📄 Generate purchase order
 
-### Project Management
+### 💳 Vendor Payment
 
-Monitoring dan tracking project dengan Project Manager assignment dan berbagai level akses (View, Work, Payment, Full).
+> Payment management yang terorganisir
 
-### User Management
+-   🏢 Vendor database terintegrasi
+-   📧 Invoice tracking
+-   ✅ Approval workflow
+-   📄 Generate payment document
 
-Manajemen user dengan module assignment, role management, dan profile management (Admin only).
+### ✅ Approval System
 
-### Notifications
+> Centralized approval untuk semua jenis submission
 
-Sistem notifikasi real-time untuk semua event penting (submission baru, status update, reminder).
+-   📋 Leave Approval dengan real-time notifications
+-   💰 Payment Approval (SPD, Purchase, Vendor Payment)
+-   🔍 Filter & search yang powerful
+-   📊 Export capabilities
 
-### Activity Logging
+### 📁 Project Management
 
-Audit trail lengkap untuk semua aktivitas sistem dengan filter dan export capabilities.
+> Project tracking yang comprehensive
+
+-   👥 Project Manager assignment
+-   🔐 Multiple access levels (View, Work, Payment, Full)
+-   📊 Project dashboard dengan analytics
+-   📈 Progress monitoring
+
+### 👥 User Management
+
+> User administration yang flexible (Admin only)
+
+-   ➕ User CRUD operations
+-   🧩 Module assignment per user
+-   🔐 Role management
+-   👤 Profile management
+
+### 🔔 Notifications
+
+> Real-time notifications untuk semua event
+
+-   🆕 New submission alerts
+-   📊 Status update notifications
+-   ⏰ Reminder untuk work plan & realization
+-   🔄 Real-time updates tanpa refresh
+
+### 📝 Activity Logging
+
+> Audit trail yang lengkap
+
+-   📊 Log semua aktivitas sistem
+-   🔍 Filter & search capabilities
+-   📥 Export untuk audit purposes
+-   🔐 Security tracking
 
 ---
 
-## 💻 Teknologi
+## 💻 Tech Stack
 
-**Backend:**
+### Backend
 
--   Laravel 11.31 (PHP Framework)
--   PHP 8.2+
--   MySQL 8.x
+```
+🟢 Laravel 11.31    → PHP Framework yang powerful
+🔵 PHP 8.2+         → Modern PHP dengan performance tinggi
+🟡 MySQL 8.x        → Database yang reliable
+```
 
-**Frontend:**
+### Frontend
 
--   Blade Templates
--   Tailwind CSS 3.4
--   Alpine.js 3.x
--   Vite 6.0
+```
+🎨 Tailwind CSS 3.4 → Utility-first CSS framework
+⚡ Alpine.js 3.x    → Lightweight JavaScript framework
+🔧 Vite 6.0         → Build tool yang super fast
+📄 Blade Templates  → Server-side templating
+```
 
-**Packages:**
+### Packages
 
--   Spatie Laravel Permission (RBAC)
--   Laravel Telescope (Monitoring)
--   Barryvdh Laravel DomPDF (PDF Generation)
+```
+🔐 Spatie Permission → RBAC system
+🔍 Laravel Telescope → Monitoring & debugging
+📄 DomPDF           → PDF generation
+```
 
 ---
 
-## 📦 Instalasi
+## ⚡ Quick Start
 
-### Persyaratan
+### 📋 Requirements
 
 -   PHP >= 8.2
 -   Composer >= 2.0
 -   Node.js >= 18.x
 -   MySQL >= 8.0
 
-### Langkah Instalasi
+### 🚀 Installation
 
 ```bash
-# 1. Clone repository
+# 1️⃣ Clone repository
 git clone <repository-url> pge-system
 cd pge-system
 
-# 2. Install dependencies
+# 2️⃣ Install dependencies
 composer install
 npm install
 
-# 3. Setup environment
+# 3️⃣ Setup environment
 cp .env.example .env
 php artisan key:generate
 
-# 4. Konfigurasi database di .env
+# 4️⃣ Configure database (edit .env)
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -128,117 +191,120 @@ DB_DATABASE=pge_system
 DB_USERNAME=root
 DB_PASSWORD=your_password
 
-# 5. Run migrations & seeders
+# 5️⃣ Run migrations & seeders
 php artisan migrate
 php artisan db:seed
 
-# 6. Build frontend assets
+# 6️⃣ Build frontend
 npm run build
 
-# 7. Start development server
+# 7️⃣ Start server
 php artisan serve
 ```
 
-### Akses Aplikasi
+### 🎯 Access Application
 
--   **URL**: http://localhost:8000
--   **Default Admin**:
-    -   Email: `admin@pge.com`
-    -   Password: `password`
--   **Default User**:
-    -   Email: `user@pge.com`
-    -   Password: `password`
+| Role      | URL                   | Credentials                  |
+| --------- | --------------------- | ---------------------------- |
+| **Admin** | http://localhost:8000 | `admin@pge.com` / `password` |
+| **User**  | http://localhost:8000 | `user@pge.com` / `password`  |
 
-> ⚠️ **Penting**: Ubah password default setelah login pertama!
+> ⚠️ **Important**: Change default password after first login!
 
 ---
 
-## 📁 Struktur Modul
+## 📁 Module Structure
 
-Sistem menggunakan arsitektur modular dengan 12 modul:
+Sistem menggunakan **12 modul** dengan arsitektur modular:
 
-**Default Modules** (selalu aktif):
+### 🟢 Default Modules (Always Active)
 
--   Work Plan
--   Work Realization
+-   📅 Work Plan
+-   ✅ Work Realization
 
-**User Assignable Modules**:
+### 🔵 User Assignable Modules
 
--   Leave
--   Leave Approval
--   SPD
--   Purchase
--   Vendor Payment
--   Payment Approval
--   Project Management
--   EAR
+-   🏝️ Leave
+-   📋 Leave Approval
+-   ✈️ SPD
+-   🛒 Purchase
+-   💳 Vendor Payment
+-   ✅ Payment Approval
+-   📁 Project Management
+-   📊 EAR
 
-**Admin Only Modules**:
+### 🔴 Admin Only Modules
 
--   User Management
--   Documentation
+-   👥 User Management
+-   📚 Documentation
 
-Admin dapat mengatur akses modul per user melalui User Management.
+> 💡 **Tip**: Admin bisa mengatur akses modul per user melalui User Management!
 
 ---
 
 ## 🔐 Roles & Permissions
 
-**Admin Role:**
+### 👑 Admin Role
 
--   Full access ke semua modul dan fitur
--   User management dengan module assignment
--   Approval untuk semua jenis submission
--   Access ke semua reports dan analytics
+-   ✅ Full access ke semua modul
+-   👥 User management dengan module assignment
+-   ✅ Approval untuk semua jenis submission
+-   📊 Access ke semua reports & analytics
 
-**User Role:**
+### 👤 User Role
 
--   Akses terbatas berdasarkan module assignment
--   Default hanya punya Work Plan & Work Realization
--   Dapat submit requests jika module di-assign
--   Dapat approve jika module approval di-assign
+-   🔐 Akses terbatas berdasarkan module assignment
+-   📅 Default: Work Plan & Work Realization
+-   📝 Dapat submit requests (jika module di-assign)
+-   ✅ Dapat approve (jika module approval di-assign)
 
 ---
 
-## 📝 Workflow
+## 📝 Workflow Examples
 
-### Leave Request
+### 🏝️ Leave Request Flow
 
-1. User mengajukan cuti → Status: Pending
-2. Approver review → Approve/Reject
-3. Notifikasi ke user → Status update
-4. Generate PDF certificate (jika approved)
+```
+1. User mengajukan cuti → ⏳ Status: Pending
+2. Approver review → ✅ Approve / ❌ Reject
+3. 🔔 Notifikasi ke user → Status update
+4. 📄 Generate PDF certificate (jika approved)
+```
 
-### Payment Submission
+### 💰 Payment Submission Flow
 
-1. User submit payment request (SPD/Purchase/Vendor Payment)
-2. Status: Pending → Notifikasi ke approver
-3. Approver review → Approve/Reject dengan reason
-4. Notifikasi ke user → Status update
-5. Generate PDF document (jika approved)
+```
+1. User submit payment → ⏳ Status: Pending
+2. 🔔 Notifikasi ke approver
+3. Approver review → ✅ Approve / ❌ Reject dengan reason
+4. 🔔 Notifikasi ke user → Status update
+5. 📄 Generate PDF document (jika approved)
+```
 
-### Work Management
+### 📋 Work Management Flow
 
-1. Morning: User create Work Plan
-2. During day: User execute work
-3. Evening: User create Work Realization
-4. Project Manager: View work di Project Dashboard
+```
+1. 🌅 Morning: User create Work Plan
+2. ☀️ During day: User execute work
+3. 🌙 Evening: User create Work Realization
+4. 👥 Project Manager: View work di Project Dashboard
+```
 
 ---
 
 ## 🛠️ Development
 
-### Development Server
+### 🚀 Start Development Server
 
 ```bash
-# Option 1: Laravel development server
+# Option 1: Simple server
 php artisan serve
 
-# Option 2: With queue, logs, and vite (recommended)
+# Option 2: With queue, logs, vite (recommended)
 composer dev
 ```
 
-### Build Assets
+### 🎨 Build Assets
 
 ```bash
 # Development (watch mode)
@@ -248,7 +314,7 @@ npm run dev
 npm run build
 ```
 
-### Clear Cache
+### 🧹 Clear Cache
 
 ```bash
 php artisan cache:clear
@@ -260,8 +326,6 @@ php artisan route:clear
 ---
 
 ## 🚀 Deployment
-
-### Pre-Deployment
 
 ```bash
 # Update dependencies
@@ -278,7 +342,7 @@ php artisan route:cache
 php artisan view:cache
 ```
 
-Lihat `DEPLOY_CHECKLIST.md` untuk checklist lengkap.
+> 📋 Lihat `DEPLOY_CHECKLIST.md` untuk checklist lengkap!
 
 ---
 
@@ -286,21 +350,21 @@ Lihat `DEPLOY_CHECKLIST.md` untuk checklist lengkap.
 
 Dokumentasi lengkap tersedia di dalam aplikasi setelah login sebagai admin:
 
--   `/admin/documentation` - Dokumentasi sistem lengkap
+🔗 `/admin/documentation` - Dokumentasi sistem lengkap
 
 ---
 
-## 🤝 Kontribusi
+## 🤝 Contributing
 
-1. Fork repository
-2. Create feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open Pull Request
+1. 🍴 Fork repository
+2. 🌿 Create feature branch: `git checkout -b feature/amazing-feature`
+3. 💾 Commit changes: `git commit -m 'Add amazing feature'`
+4. 📤 Push to branch: `git push origin feature/amazing-feature`
+5. 🔀 Open Pull Request
 
 ---
 
-## 📄 Lisensi
+## 📄 License
 
 This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
@@ -308,13 +372,17 @@ This project is open-sourced software licensed under the [MIT license](https://o
 
 ## 📞 Support
 
-Untuk pertanyaan atau support, silakan hubungi:
+Untuk pertanyaan atau support:
 
--   **Email**: support@pge.com
--   **Documentation**: `/admin/documentation` (setelah login sebagai admin)
+-   📧 **Email**: support@pge.com
+-   📚 **Documentation**: `/admin/documentation` (setelah login sebagai admin)
 
 ---
 
-<p align="center">
-  <strong>PGE System v1.10.0</strong> - Built with ❤️ using Laravel
-</p>
+<div align="center">
+
+**PGE System v1.10.0** - Built with ❤️ using Laravel
+
+[⬆ Back to Top](#-pge-system)
+
+</div>
