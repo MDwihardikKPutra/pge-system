@@ -6,7 +6,7 @@
     <title>Surat Cuti & Izin - {{ $leave->leave_number }}</title>
     <style>
         @page {
-            margin: 1.5cm 1.5cm;
+            margin: 2.5cm 2.5cm;
         }
         * {
             margin: 0;
@@ -67,12 +67,6 @@
             text-transform: none;
             margin-bottom: 2px;
             color: #333333;
-        }
-        .company-address {
-            font-size: 9pt;
-            line-height: 1.4;
-            color: #555555;
-            margin-top: 3px;
         }
         .document-title {
             text-align: center;
@@ -161,8 +155,8 @@
         }
         .approval-stamp {
             position: absolute;
-            right: 1.5cm;
-            bottom: 1.5cm;
+            right: 2.5cm;
+            bottom: 2.5cm;
             text-align: center;
             padding: 8px 15px;
             border: 2px solid #28a745;
@@ -205,17 +199,23 @@
     <div class="letterhead">
         <div class="letterhead-left">
             <div class="logo-container">
-                <img src="{{ public_path('logopge.png') }}" alt="PGE Logo" onerror="this.style.display='none';">
+                @php
+                    $logoPath = public_path('logopge.png');
+                    $logoExists = file_exists($logoPath);
+                    $logoBase64 = '';
+                    if ($logoExists) {
+                        $logoData = file_get_contents($logoPath);
+                        $logoBase64 = 'data:image/png;base64,' . base64_encode($logoData);
+                    }
+                @endphp
+                @if($logoExists && $logoBase64)
+                    <img src="{{ $logoBase64 }}" alt="PGE Logo">
+                @endif
             </div>
         </div>
         <div class="letterhead-right">
             <div class="company-name">PGE</div>
             <div class="company-full-name">PT. PURI GANESHA ENGINEERING</div>
-            <div class="company-address">
-                Jl. Raya Bogor KM 30, Cimanggis, Depok<br>
-                Jawa Barat, Indonesia<br>
-                Telp: (021) 12345678 | Email: info@pge.co.id
-            </div>
         </div>
     </div>
 
@@ -224,8 +224,8 @@
 
     <!-- Document Number -->
     <div class="document-number">
-        No. Dokumen: {{ $leave->leave_number }}<br>
-        Tanggal: {{ $leave->created_at->format('d F Y') }}
+        No. Dokumen: {{ $leave->leave_number ?? '-' }}<br>
+        Tanggal: {{ $leave->created_at ? $leave->created_at->format('d F Y') : date('d F Y') }}
     </div>
 
     <!-- Content -->

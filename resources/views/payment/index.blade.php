@@ -94,7 +94,7 @@
 
         <!-- Purchase Table -->
         <div x-show="activeTab === 'purchase'" x-cloak class="mt-6">
-            @include('payment.purchase.table', ['purchases' => $purchases, 'routePrefix' => $routePrefix])
+            @include('payment.purchase.table', ['purchases' => $purchases, 'routePrefix' => $routePrefix, 'isAdmin' => $isAdmin])
         </div>
 
         <!-- Vendor Payment Table -->

@@ -342,19 +342,39 @@ class LeaveController extends Controller
      */
     public function downloadPDF($id)
     {
-        $leave = \App\Models\LeaveRequest::with(['user', 'leaveType', 'approvedBy'])->findOrFail($id);
-        $this->authorize('view', $leave);
+        try {
+            $leave = \App\Models\LeaveRequest::with(['user', 'leaveType', 'approvedBy'])->findOrFail($id);
+            $this->authorize('view', $leave);
 
-        // Only allow download for approved leave requests
-        if ($leave->status->value !== 'approved') {
-            abort(403, 'PDF hanya tersedia untuk pengajuan cuti yang sudah disetujui.');
+            // Only allow download for approved leave requests
+            if ($leave->status->value !== 'approved') {
+                abort(403, 'PDF hanya tersedia untuk pengajuan cuti yang sudah disetujui.');
+            }
+
+            // Ensure user relationship is loaded
+            if (!$leave->user) {
+                abort(404, 'Data pengguna tidak ditemukan.');
+            }
+
+            // Ensure leaveType relationship is loaded
+            if (!$leave->leaveType) {
+                abort(404, 'Data jenis cuti tidak ditemukan.');
+            }
+
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.leave', compact('leave'))
+                ->setPaper('a4', 'portrait')
+                ->setOption('enable-local-file-access', true);
+
+            $filename = 'Surat_Cuti_' . $leave->leave_number . '.pdf';
+            
+            return $pdf->download($filename);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            abort(404, 'Data cuti tidak ditemukan.');
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            abort(403, $e->getMessage());
+        } catch (\Exception $e) {
+            \App\Helpers\LogHelper::logControllerError('downloading PDF', 'LeaveRequest', $e, $id);
+            abort(500, 'Terjadi kesalahan saat menghasilkan PDF: ' . $e->getMessage());
         }
-
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.leave', compact('leave'))
-            ->setPaper('a4', 'portrait');
-
-        $filename = 'Surat_Cuti_' . $leave->leave_number . '.pdf';
-        
-        return $pdf->download($filename);
     }
 }
