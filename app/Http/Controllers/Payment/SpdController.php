@@ -179,7 +179,10 @@ class SpdController extends BaseController
      */
     public function downloadPDF(SPD $spd)
     {
-        $this->authorize('view', $spd);
+        // Admin can always access, bypass authorization check
+        if (!auth()->user()->hasRole('admin')) {
+            $this->authorize('view', $spd);
+        }
         
         // Only allow download for approved SPD
         if ($spd->status->value !== 'approved') {

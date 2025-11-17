@@ -199,18 +199,7 @@
     <div class="letterhead">
         <div class="letterhead-left">
             <div class="logo-container">
-                @php
-                    $logoPath = public_path('logopge.png');
-                    $logoExists = file_exists($logoPath);
-                    $logoBase64 = '';
-                    if ($logoExists) {
-                        $logoData = file_get_contents($logoPath);
-                        $logoBase64 = 'data:image/png;base64,' . base64_encode($logoData);
-                    }
-                @endphp
-                @if($logoExists && $logoBase64)
-                    <img src="{{ $logoBase64 }}" alt="PGE Logo">
-                @endif
+                {{-- Logo removed to improve PDF generation performance --}}
             </div>
         </div>
         <div class="letterhead-right">
@@ -268,11 +257,11 @@
             </div>
             <div class="form-row">
                 <span class="form-label">Tanggal Mulai</span>
-                <span class="form-value">: {{ $leave->start_date->format('d F Y') }}</span>
+                <span class="form-value">: {{ $leave->start_date ? $leave->start_date->format('d F Y') : '-' }}</span>
             </div>
             <div class="form-row">
                 <span class="form-label">Tanggal Selesai</span>
-                <span class="form-value">: {{ $leave->end_date->format('d F Y') }}</span>
+                <span class="form-value">: {{ $leave->end_date ? $leave->end_date->format('d F Y') : '-' }}</span>
             </div>
             <div class="form-row">
                 <span class="form-label">Total Hari</span>
@@ -321,7 +310,7 @@
             </div>
             @if($leave->approved_at)
             <div style="margin-top: 3px; font-size: 8pt; color: #666;">
-                {{ $leave->approved_at->format('d F Y') }}
+                {{ $leave->approved_at ? $leave->approved_at->format('d F Y') : '-' }}
             </div>
             @endif
             @endif
@@ -334,7 +323,7 @@
         <div class="stamp-title">✓ DISETUJUI</div>
         <div class="stamp-name">{{ $leave->approvedBy->name ?? '-' }}</div>
         @if($leave->approved_at)
-        <div class="stamp-date">{{ $leave->approved_at->format('d/m/Y H:i') }}</div>
+        <div class="stamp-date">{{ $leave->approved_at ? $leave->approved_at->format('d/m/Y H:i') : '-' }}</div>
         @endif
     </div>
     @endif

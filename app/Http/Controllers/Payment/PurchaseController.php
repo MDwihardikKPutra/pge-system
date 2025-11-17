@@ -151,7 +151,10 @@ class PurchaseController extends BaseController
      */
     public function downloadPDF(Purchase $purchase)
     {
-        $this->authorize('view', $purchase);
+        // Admin can always access, bypass authorization check
+        if (!auth()->user()->hasRole('admin')) {
+            $this->authorize('view', $purchase);
+        }
         
         // Only allow download for approved Purchase
         if ($purchase->status->value !== 'approved') {

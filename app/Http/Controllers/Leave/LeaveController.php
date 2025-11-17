@@ -343,8 +343,18 @@ class LeaveController extends Controller
     public function downloadPDF($id)
     {
         try {
-            $leave = \App\Models\LeaveRequest::with(['user', 'leaveType', 'approvedBy'])->findOrFail($id);
-            $this->authorize('view', $leave);
+            // Handle both model binding and ID parameter
+            if ($id instanceof \App\Models\LeaveRequest) {
+                $leave = $id;
+                $leave->load(['user', 'leaveType', 'approvedBy']);
+            } else {
+                $leave = \App\Models\LeaveRequest::with(['user', 'leaveType', 'approvedBy'])->findOrFail($id);
+            }
+            
+            // Admin can always access, bypass authorization check
+            if (!auth()->user()->hasRole('admin')) {
+                $this->authorize('view', $leave);
+            }
 
             // Only allow download for approved leave requests
             if ($leave->status->value !== 'approved') {
@@ -361,9 +371,15 @@ class LeaveController extends Controller
                 abort(404, 'Data jenis cuti tidak ditemukan.');
             }
 
+            // Increase memory and execution time for PDF generation
+            ini_set('memory_limit', '256M');
+            set_time_limit(60);
+
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.leave', compact('leave'))
                 ->setPaper('a4', 'portrait')
-                ->setOption('enable-local-file-access', true);
+                ->setOption('enable-local-file-access', true)
+                ->setOption('isRemoteEnabled', false)
+                ->setOption('isHtml5ParserEnabled', true);
 
             $filename = 'Surat_Cuti_' . $leave->leave_number . '.pdf';
             

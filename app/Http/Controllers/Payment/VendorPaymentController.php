@@ -154,7 +154,10 @@ class VendorPaymentController extends BaseController
      */
     public function downloadPDF(VendorPayment $vendorPayment)
     {
-        $this->authorize('view', $vendorPayment);
+        // Admin can always access, bypass authorization check
+        if (!auth()->user()->hasRole('admin')) {
+            $this->authorize('view', $vendorPayment);
+        }
         
         // Only allow download for approved Vendor Payment
         if ($vendorPayment->status->value !== 'approved') {
